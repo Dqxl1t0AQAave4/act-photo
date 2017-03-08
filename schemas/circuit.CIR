@@ -5,8 +5,45 @@ Program=Micro-Cap
 Screen=1600,1200
 MCAPVersion=9.0.7.0
 Key ID=2 233 293 684
-NLCnt=0
+NLCnt=1
 TXCnt=0
+
+[compdef]
+Name=ATmega8A
+Definition=Macro
+Shape=AutoMacro
+Mask=28672
+Label Offset=20,4,-169,51
+PinCnt=28
+Pin="PC6",d,0,2,-19,-2
+Pin="PD0",d,0,4,-19,0
+Pin="PD1",d,0,6,-19,0
+Pin="PD2",d,0,8,-19,0
+Pin="PD3",d,0,10,-19,0
+Pin="PD4",d,0,12,-19,0
+Pin="VCC",d,0,14,-20,0
+Pin="GND",d,0,16,-21,0
+Pin="PB6",d,0,18,-19,0
+Pin="PB7",d,0,20,-19,0
+Pin="PD5",d,0,22,-19,0
+Pin="PD6",d,0,24,-19,0
+Pin="PD7",d,0,26,-19,0
+Pin="PB0",d,0,28,-19,1
+Pin="PC5",d,17,2
+Pin="PC4",d,17,4
+Pin="PC3",d,17,6
+Pin="PC2",d,17,8
+Pin="PC1",d,17,10
+Pin="PC0",d,17,12
+Pin="GND1",d,17,14
+Pin="AREF",d,17,16
+Pin="AVCC",d,17,18
+Pin="PB5",d,17,20
+Pin="PB4",d,17,22
+Pin="PB3",d,17,24
+Pin="PB2",d,17,26
+Pin="PB1",d,17,28
+AutoRect=2,0,15,30
 
 [Circuit]
 Window Placement=2,3, -1,-1, -8,-30, 0,0,1066,723
@@ -41,6 +78,7 @@ Digital F Color=#FFFF00
 Digital 1 Color=#FF0000
 Digital X Color=#C0C0C0
 Digital Z Color=#808080
+Window Placement in Transient Analysis=2,3, -1,-1, -8,-30, 100,100,1366,808
 SpiceType=AMBIGUOUS
 Block Select Color=#51F998
 TitleBlock Field_1=$name
@@ -52,7 +90,7 @@ TitleBlock One Title=False
 Title_Block_Border=False
 Title_Block=False
 Show Nodes=False
-Show Voltages=False
+Show Voltages=True
 Show Current=False
 Show Power=False
 Show Condition=False
@@ -60,6 +98,52 @@ Show Pin Connections=False
 Show Cross=False
 Show Attribute Text=True
 Show Grid Text=True
+
+[Comp]
+Name=ATmega8A
+Style=ShowPinText
+ShowPackagePins=True
+Grid=90,24
+AutoMacroRect=2,0,15,30
+AutoMacroPinCnt=28
+AutoMacroPin="PC6",0,2,-19,-2
+AutoMacroPin="PD0",0,4,-19,0
+AutoMacroPin="PD1",0,6,-19,0
+AutoMacroPin="PD2",0,8,-19,0
+AutoMacroPin="PD3",0,10,-19,0
+AutoMacroPin="PD4",0,12,-19,0
+AutoMacroPin="VCC",0,14,-20,0
+AutoMacroPin="GND",0,16,-21,0
+AutoMacroPin="PB6",0,18,-19,0
+AutoMacroPin="PB7",0,20,-19,0
+AutoMacroPin="PD5",0,22,-19,0
+AutoMacroPin="PD6",0,24,-19,0
+AutoMacroPin="PD7",0,26,-19,0
+AutoMacroPin="PB0",0,28,-19,1
+AutoMacroPin="PC5",17,2,0,0
+AutoMacroPin="PC4",17,4,0,0
+AutoMacroPin="PC3",17,6,0,0
+AutoMacroPin="PC2",17,8,0,0
+AutoMacroPin="PC1",17,10,0,0
+AutoMacroPin="PC0",17,12,0,0
+AutoMacroPin="GND1",17,14,0,0
+AutoMacroPin="AREF",17,16,0,0
+AutoMacroPin="AVCC",17,18,0,0
+AutoMacroPin="PB5",17,20,0,0
+AutoMacroPin="PB4",17,22,0,0
+AutoMacroPin="PB3",17,24,0,0
+AutoMacroPin="PB2",17,26,0,0
+AutoMacroPin="PB1",17,28,0,0
+
+[Attr]
+ONV=20,4,PART,X1
+Style=8192
+
+[Attr]
+ONV=20,18,FILE,.\ATmega8A.MAC
+
+[Attr]
+ONV=0,0,PACKAGE,
 
 [Schematic]
 CurrentSection 0=0
@@ -148,7 +232,7 @@ FONT=Yes
 
 [Section]
 Index=0
-Name="circuit1"
+Name="circuit"
 Type=Main
 Enable=True
 CurrentPage 0=0
@@ -170,7 +254,7 @@ Scale 0=1
 Scale 1=1
 Scale 2=1
 Scale 3=1
-Grid=29,16
+Grid=67,78
 
 [Page]
 Index=1
@@ -214,6 +298,212 @@ Background Color=#FFFFFF
 Len=0
 
 
+[Transient]
+Window Placement=2,3, -1,-1, -8,-30, 100,100,1366,808
+Font=Height=-15,FStyle=0,Color=#0000FF,Name=Arial
+WinBackGround Color=#FFFFFF
+Select Color=#FF0000
+Select Box Color=#000080
+Title
+AutoTitle=Yes
+Grid Color=#808080
+Grid Weight=1
+Grid Pattern=Dot6
+Tracker Foreground=Height=-15,FStyle=0,Color=#000000,Name=Arial
+Tracker Background=#FFFF00
+Baseline color=#0000FF
+Static Grids=False
+PlusMark=False
+MinorLog25=Off
+LabelMinor=Off
+OperPoint=True
+OperPointOnly=False
+AutoScaleRanges=False
+DataPoints=False
+Token=False
+Ruler=False
+XAxisGrids=True
+YAxisGrids=True
+MinorLogGrids=True
+BaseLine=False
+Graph Background=#FFFFFF
+Tracker Intercept=False
+Tracker Mouse=True
+Tracker Cursor=True
+Tracker Cursor BranchInfo=False
+Horizontal Cursor=False
+Same Y Scales=Yes
+Enable X Scaling=True
+Enable Y Scaling=True
+Keep X Scales The Same=False
+Number of Grids X=5
+Number of Grids Y=5
+Cursor Select Color Primary=#C0C0C0
+Cursor Select Color Secondary=#FF0000
+Data Point Labels Color Fore=Height=-15,FStyle=0,Color=#000000,Name=Arial
+Data Point Labels Color Back=#FFFF00
+FFT_NPts="1024"
+FFT_IncludeDCHarmonic=False
+FFT_AutoScale_Harmonics="10"
+PrinterAutoTile=No
+PrinterBlackBorder=No
+MonMaxShow=2
+MonPageWidth=66
+MonPlotWidth=21
+MonExprXWidth=142
+MonExprYWidth=260
+MonRangeXWidth=90
+MonRangeYWidth=90
+AnimateWait=0
+AnimateWaitTime=500
+Save_For_Future=No
+Reduce_Display=1
+Reduce_Save=1
+Num Out Header Left
+Num Out Header Center="$MC\n$user\n$company\n$Analysis of $name"
+Num Out Header Right
+Num Out Delimiter=32
+Num Out Write=True
+Num Out Write Main Header=True
+Num Out Write Limits=True
+Num Out Write Branch Header=True
+Num Out Write Models=True
+Num Out Write Zero Models=True
+Num Out Write Undefined Models=True
+Num Out Write Operating Point=True
+Num Out Write Values=True
+Num Out Write Waveform Header=True
+Num Out Low="TMIN"
+Num Out High="TMAX"
+Num Out Font=Height=-15,FStyle=0,Color=#000000,Name=Courier New
+
+[Tools]
+Pos=Top
+SELECT=Yes
+GRAPHIC=Yes
+LINE=No
+ELLIPSE=No
+RECT=No
+DIAM=No
+ARC=No
+PIE=No
+LEFTBRK=No
+RIGHTBRK=No
+BOTHBRK=No
+POLYCLOS=No
+SCALE=Yes
+CURSOR=Yes
+MEASUREH=Yes
+MEASUREV=Yes
+TAG=Yes
+PTAG=Yes
+TEXT=Yes
+PROPERTY=Yes
+START=Yes
+STOP=Yes
+PAUSE=Yes
+DATAPTS=Yes
+TOKENS=Yes
+RULER=Yes
+PLUS=Yes
+XAXIS=Yes
+YAXIS=Yes
+MINORLOG=Yes
+LOG25=Yes
+BASELINE=Yes
+HORIZCUR=Yes
+GOTOX=Yes
+GOTOY=Yes
+GOTOPERF=Yes
+GOTOBRNC=Yes
+CLEAR_ACCUMULATED=Yes
+PDELETE_ALL_PLOTS=Yes
+NEXT=Yes
+NEXTIN=Yes
+PEAK=Yes
+VALLEY=Yes
+HIGH=Yes
+LOW=Yes
+INFLECTN=Yes
+GHIGH=Yes
+GLOW=Yes
+BOTTOM=Yes
+TOP=Yes
+WAVEFORMBUFFER=Yes
+AOUTPUT=Yes
+PKEY=Yes
+ENXSCALE=Yes
+ENYSCALE=Yes
+ZOOMIN=Yes
+ZOOMOUT=Yes
+AUTOSCALE=Yes
+COLOR=Yes
+FONT=Yes
+SELNEXT=No
+
+[APage]
+Analysis=Transient
+Name="Main"
+
+[Monte Carlo Options]
+Analysis=Transient
+Status=Off
+Zero Tolerance=False
+Distribution=Normal
+Number of Runs=10
+Seed=0
+
+[Limits]
+Analysis=Transient
+TRange=5
+TStep=1
+NPts=51
+Temp=27
+RetraceRuns=1
+StateVar=Zero
+RunOption=Normal
+Temperature Type=Linear
+Accumulate Plots=False
+
+[WaveForm]
+Analysis=Transient
+Plt=1
+AliasID=1
+XExp=T
+YExp=v(I1)
+XRng=1e-6
+YRng=1,-1
+Options=LINEARX,LINEARY
+Range Grid X=2e-7
+Range Grid Y=0.5
+Line Color=#0000FF
+Text Color=#0000FF
+Rainbow=False
+VFmtX=3
+VFmtY=3
+ScaleFactorX="None"
+ScaleFactorY="None"
+ScaleUnitsX="Auto"
+ScaleUnitsY="Auto"
+SFmtX=3
+SFmtY=3
+
+[WaveForm]
+Analysis=Transient
+AliasID=-1
+Options=LINEARX,LINEARY
+Line Color=#008000
+Text Color=#008000
+Rainbow=False
+VFmtX=3
+VFmtY=3
+ScaleFactorX="None"
+ScaleFactorY="None"
+ScaleUnitsX="Auto"
+ScaleUnitsY="Auto"
+SFmtX=3
+SFmtY=3
+
 [Limits]
 Analysis=DynamicAC
 FirstValueDisplay=Mag
@@ -226,6 +516,7 @@ PlaceText=True
 
 [Pane]
 Analysis=Transient
+CurrentPage 0="Main"
 
 [Pane]
 Analysis=AC
@@ -235,6 +526,11 @@ Analysis=DC
 
 [Pane]
 Analysis=Distortion
+
+[Watch]
+Analysis=Transient
+Format=3
+ExprPercentWidth=80
 
 [OPMethods]
 Analysis=Transient
