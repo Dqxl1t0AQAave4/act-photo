@@ -1,5 +1,3 @@
-*.r90
-*.d90
 *.dep
 settings/*
 debug/*
