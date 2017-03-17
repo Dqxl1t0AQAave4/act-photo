@@ -149,7 +149,10 @@ __interrupt void usart_rxc_interrupt_handler()
 #pragma vector=USART_UDRE_vect
 __interrupt void usart_udre_interrupt_handler()
 {
-    oread(UDR);
+    /* Must read the data anyway
+       in order to suppress unnecessary interrupts */
+    byte udr = UDR;
+    oread(udr);
 }
 
 /* Disable interrupts (see ATmega8A datasheet) */
