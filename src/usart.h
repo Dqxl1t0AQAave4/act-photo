@@ -156,7 +156,10 @@ __interrupt void usart_rxc_interrupt_handler()
         /* Allow nested interrupts */
         __enable_interrupt();
         
-        iwrite(UDR);
+        /* Must read the data anyway
+           in order to suppress unnecessary interrupts */
+        byte udr = UDR; /* Reads from UDR */
+        iwrite(udr); /* Reads from udr */
     )
 }
 
@@ -170,10 +173,7 @@ __interrupt void usart_udre_interrupt_handler()
     /* Allow nested interrupts */
     __enable_interrupt();
     
-    /* Must read the data anyway
-       in order to suppress unnecessary interrupts */
-    byte udr = UDR;
-    oread(udr);
+    oread(UDR); /* Writes to UDR */
 }
 
 /* Disable interrupts (see ATmega8A datasheet) */
