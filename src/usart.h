@@ -82,7 +82,7 @@ inline bool iread(byte &out)
 /*
  * Reads a byte from output buffer.
  *
- * Disables further USART interrupts on failure
+ * Keeps further USART interrupts disabled on failure.
  */
 #define oread(out) \
     if (iobuf_state & OBUF_NEMPTY) /* not empty */ \
