@@ -20,10 +20,10 @@ byte obuf[OBUF_SIZE];
 __regvar __no_init
 volatile byte iobuf_state @ 15;
 
-volatile byte ibuf_head   = 0;
-volatile byte ibuf_tail   = 0;
-volatile byte obuf_head   = 0;
-volatile byte obuf_tail   = 0;
+__tiny volatile byte ibuf_head   = 0;
+__tiny volatile byte ibuf_tail   = 0;
+__tiny volatile byte obuf_head   = 0;
+__tiny volatile byte obuf_tail   = 0;
 
 /* Accessed by the user code; USART interrupts must be disabled manually */
 /*
