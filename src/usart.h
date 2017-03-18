@@ -100,8 +100,10 @@ inline bool iread(byte &out)
 /* Accessed by the user code; USART interrupts must be disabled manually */
 /*
  * Writes the byte to output buffer.
+ *
+ * Returns true if byte was actually written, false otherwise
  */
-inline void owrite(const byte &in)
+inline bool owrite(const byte &in)
 {
     if (iobuf_state & OBUF_NFULL) /* not full */
     {
@@ -109,9 +111,11 @@ inline void owrite(const byte &in)
         obuf[t++] = in; /* write byte */
         if (t == OBUF_SIZE) t = 0;
         if (t == obuf_head) iobuf_state &= ~OBUF_NFULL /* make full */;
-        iobuf_state |= OBUF_NEMPTY; /* mark not empty */ \
+        iobuf_state |= OBUF_NEMPTY; /* mark not empty */
         obuf_tail = t;
+        return true;
     }
+    return false;
 }
 
 inline byte isize()
