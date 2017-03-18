@@ -13,6 +13,18 @@ byte obuf[OBUF_SIZE];
 #define OBUF_NEMPTY 0x4
 #define OBUF_NFULL  0x8
 
+/* Disables RXCIE, executes code, enables RXCIE */
+#define NO_RX_COMPLETE(code) \
+    UCSRB &= ~(1 << RXCIE); /* Disable RX Complete interrupt */ \
+    code \
+    UCSRB |= (1 << RXCIE); /* Enable RX Complete interrupt */
+
+/* Disables UDRIE, executes code, enables UDRIE */
+#define NO_DATA_REG_EMPTY(code) \
+    UCSRB &= ~(1 << UDRIE); /* Disable Data Reg. Empty interrupt */ \
+    code \
+    UCSRB |= (1 << UDRIE); /* Enable Data Reg. Empty interrupt */
+
 /*
  * Since the variable to be accessed very often,
  * it seems necessary to declare it as __regvar.
@@ -79,10 +91,7 @@ inline bool iread(byte &out)
         if (h == obuf_tail) iobuf_state &= ~OBUF_NEMPTY; /* mark empty */ \
         iobuf_state |= OBUF_NFULL; /* mark not full */ \
         obuf_head = h; \
-    } \
-    else \
-    { \
-        UCSRB &= ~(1 << UDRIE); /* Unset Data Reg. Empty interrupt */ \
+        UCSRB |= (1 << UDRIE); /* Enable Data Reg. Empty interrupt */ \
     }
 
 
@@ -105,50 +114,62 @@ inline void owrite(const byte &in)
 
 inline byte isize()
 {
-    UCSRB &= ~(1 << RXCIE); /* Unset RX Complete interrupt */
-    byte result = 0;
-    if (iobuf_state & IBUF_NEMPTY) /* not empty */
-    {
-        /* Warnings are unreasonable for this block since
-           interrupts are disabled and no concurrent
-           access of variables occur. */
-        if (ibuf_head < ibuf_tail)
+    NO_RX_COMPLETE(
+        byte result = 0;
+        if (iobuf_state & IBUF_NEMPTY) /* not empty */
         {
-            result = (ibuf_tail - ibuf_head);
+            /* Warnings are unreasonable for this block since
+               interrupts are disabled and no concurrent
+               access of variables occur. */
+            if (ibuf_head < ibuf_tail)
+            {
+                result = (ibuf_tail - ibuf_head);
+            }
+            else
+            {
+                result = IBUF_SIZE - (ibuf_head - ibuf_tail);
+            }
         }
-        else
-        {
-            result = IBUF_SIZE - (ibuf_head - ibuf_tail);
-        }
-    }
-    UCSRB |= (1 << RXCIE); /* Set RX Complete interrupt */
+    )
     return result;
 }
 
 inline void transmit(const byte &in)
 {
-    UCSRB &= ~(1 << UDRIE); /* Unset Data Reg. Empty interrupt */
-    owrite(in);
-    UCSRB |= (1 << UDRIE); /* Set Data Reg. Empty interrupt */
+    NO_DATA_REG_EMPTY(
+        owrite(in);
+    );
 }
 
 inline bool receive(byte &out)
 {
-    UCSRB &= ~(1 << RXCIE); /* Unset RX Complete interrupt */
-    bool result = iread(out);
-    UCSRB |= (1 << RXCIE); /* Set RX Complete interrupt */
+    NO_RX_COMPLETE(
+        bool result = iread(out);
+    );
     return result;
 }
 
 #pragma vector=USART_RXC_vect
 __interrupt void usart_rxc_interrupt_handler()
 {
-    iwrite(UDR);
+    NO_RX_COMPLETE(
+        /* Allow nested interrupts */
+        __enable_interrupt();
+        
+        iwrite(UDR);
+    )
 }
 
 #pragma vector=USART_UDRE_vect
 __interrupt void usart_udre_interrupt_handler()
 {
+    /* Must do this manually since UDRIE must
+       be cleared if output buffer become empty
+       in order to suppress unnecessary series of interrupts */
+    UCSRB &= ~(1 << UDRIE); /* Disable Data Reg. Empty interrupt */
+    /* Allow nested interrupts */
+    __enable_interrupt();
+    
     /* Must read the data anyway
        in order to suppress unnecessary interrupts */
     byte udr = UDR;
@@ -166,6 +187,6 @@ inline __monitor void usart_init()
     UCSRB = (1<<RXEN)|(1<<TXEN);
     /* Set frame format: 8data, 1stop bit */
     UCSRC = (1<<URSEL)|(3<<UCSZ0);
-     /* Set RX Complete interrupt */
-    UCSRB |= (1 << RXCIE);
+     /* Enable RX Complete and Data Reg. Empty interrupt */
+    UCSRB |= (1<<RXCIE)|(1<<UDRIE);
 }
