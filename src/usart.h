@@ -1,5 +1,7 @@
 #pragma once
 
+#include <intrinsics.h>
+
 typedef unsigned char byte;
 
 // Requires IBUFSIZE and OBUFSIZE be defined
