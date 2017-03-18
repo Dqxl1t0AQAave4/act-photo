@@ -1,11 +1,12 @@
 #pragma once
 
+// Requires IBUFSIZE and OBUFSIZE be defined
+// Requires BAUD_RATE, FOSC be defined
+// iobuf_state must be initialized
+
 #include <intrinsics.h>
 
 typedef unsigned char byte;
-
-// Requires IBUFSIZE and OBUFSIZE be defined
-// iobuf_state must be initialized
 
 byte ibuf[IBUF_SIZE];
 byte obuf[OBUF_SIZE];
@@ -185,14 +186,14 @@ __interrupt void usart_udre_interrupt_handler()
 /* Disable interrupts (see ATmega8A datasheet) */
 inline __monitor void usart_init()
 {
-    const unsigned int ubrr = 1843200/16/9600-1;
+    const int ubrr = FOSC/16/BAUD_RATE-1;
     /* Set baud rate */
     UBRRH = (unsigned char) (ubrr>>8);
     UBRRL = (unsigned char) ubrr;
     /* Enable receiver and transmitter */
     UCSRB = (1<<RXEN)|(1<<TXEN);
-    /* Set frame format: 8data, 1stop bit */
-    UCSRC = (1<<URSEL)|(3<<UCSZ0);
+    /* Set frame format: 8data, 1stop bit, parity odd bit */
+    UCSRC = (1<<URSEL)|(3<<UCSZ0)|(3<<UPM0);
      /* Enable RX Complete and Data Reg. Empty interrupt */
     UCSRB |= (1<<RXCIE)|(1<<UDRIE);
 }
