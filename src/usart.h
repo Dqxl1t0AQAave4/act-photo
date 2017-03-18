@@ -67,7 +67,7 @@ inline bool iread(byte &out)
 /*
  * Writes the byte to output buffer.
  */
-#define iwrite(in) \
+#define _iwrite(in) \
     if (iobuf_state & IBUF_NFULL) /* not full */ \
     { \
         byte t = ibuf_tail; \
@@ -84,7 +84,7 @@ inline bool iread(byte &out)
  *
  * Keeps further USART interrupts disabled on failure.
  */
-#define oread(out) \
+#define _oread(out) \
     if (iobuf_state & OBUF_NEMPTY) /* not empty */ \
     { \
         byte h = obuf_head; \
@@ -165,7 +165,7 @@ __interrupt void usart_rxc_interrupt_handler()
         /* Must read the data anyway
            in order to suppress unnecessary interrupts */
         byte udr = UDR; /* Reads from UDR */
-        iwrite(udr); /* Reads from udr */
+        _iwrite(udr); /* Reads from udr */
     )
 }
 
@@ -179,7 +179,7 @@ __interrupt void usart_udre_interrupt_handler()
     /* Allow nested interrupts */
     __enable_interrupt();
     
-    oread(UDR); /* Writes to UDR */
+    _oread(UDR); /* Writes to UDR */
 }
 
 /* Disable interrupts (see ATmega8A datasheet) */
