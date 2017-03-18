@@ -22,7 +22,7 @@
         <option>
           <name>Variant Memory</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>ExePath</name>
@@ -145,29 +145,29 @@
         </option>
         <option>
           <name>RTConfigPath</name>
-          <state>$TOOLKIT_DIR$\LIB\DLIB\dlAVR-1t-ec_mul-n.h</state>
+          <state>$TOOLKIT_DIR$\LIB\DLIB\dlAVR-1s-ec_mul-n.h</state>
         </option>
         <option>
           <name>RTLibraryPath</name>
-          <state>$TOOLKIT_DIR$\LIB\DLIB\dlAVR-1t-ec_mul-n.r90</state>
+          <state>$TOOLKIT_DIR$\LIB\DLIB\dlAVR-1s-ec_mul-n.r90</state>
         </option>
         <option>
           <name>Input variant</name>
           <version>0</version>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>Input description</name>
-          <state> No specifier n, no float or long long.</state>
+          <state> No specifier n, no float or long long, no scan set, no assignment suppressing.</state>
         </option>
         <option>
           <name>Output variant</name>
           <version>0</version>
-          <state>1</state>
+          <state>4</state>
         </option>
         <option>
           <name>Output description</name>
-          <state> No specifier a or A.</state>
+          <state> No specifier a or A, no specifier n, no float or long long, no flags.</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
@@ -263,7 +263,7 @@
         </option>
         <option>
           <name>CCListCFile</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCListCMnemonics</name>
@@ -271,15 +271,15 @@
         </option>
         <option>
           <name>CCListCMessages</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCListAssFile</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCListAssSource</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCEnableRemarks</name>
@@ -324,16 +324,16 @@
         <option>
           <name>CCLockRegs</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptSizeSpeed</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptimization</name>
           <version>1</version>
-          <state>2</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCAllowList</name>
@@ -407,7 +407,7 @@
         </option>
         <option>
           <name>CCCompilerRuntimeInfo</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>newCCIncludePaths</name>
@@ -432,12 +432,12 @@
         </option>
         <option>
           <name>CCOptSizeSpeedSlave</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptimizationSlave</name>
           <version>1</version>
-          <state>2</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOutputFile</name>
@@ -737,7 +737,7 @@
         </option>
         <option>
           <name>XList</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>SegmentMap</name>
@@ -1964,6 +1964,9 @@
   </configuration>
   <file>
     <name>$PROJ_DIR$\main.cpp</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\usart.h</name>
   </file>
 </project>
 
