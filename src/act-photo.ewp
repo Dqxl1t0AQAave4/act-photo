@@ -1969,6 +1969,9 @@
     <name>$PROJ_DIR$\main.cpp</name>
   </file>
   <file>
+    <name>$PROJ_DIR$\pwm.h</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\usart.h</name>
   </file>
 </project>
