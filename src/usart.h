@@ -4,9 +4,7 @@
 // Requires BAUD_RATE, FOSC be defined
 // iobuf_state must be initialized
 
-#include <intrinsics.h>
-
-typedef unsigned char byte;
+#include "common.h"
 
 byte ibuf[IBUF_SIZE];
 byte obuf[OBUF_SIZE];

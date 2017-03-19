@@ -1,8 +1,6 @@
-#define ENABLE_BIT_DEFINITIONS
-
-#include <iom8a.h>
+#include "common.h"
 
 int main()
 {
-  return 0;
+    return 0;
 }

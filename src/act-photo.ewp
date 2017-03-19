@@ -1963,6 +1963,9 @@
     </settings>
   </configuration>
   <file>
+    <name>$PROJ_DIR$\common.h</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\main.cpp</name>
   </file>
   <file>
