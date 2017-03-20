@@ -184,6 +184,7 @@ __interrupt void usart_udre_interrupt_handler()
 /* Disable interrupts (see ATmega8A datasheet) */
 inline __monitor void usart_init()
 {
+    iobuf_state = IBUF_NFULL | OBUF_NFULL;
     const int ubrr = FOSC/16/BAUD_RATE-1;
     /* Set baud rate */
     UBRRH = (unsigned char) (ubrr>>8);
