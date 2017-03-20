@@ -4,3 +4,4 @@
 #include <intrinsics.h>
 
 typedef unsigned char byte;
+typedef signed char sbyte;
