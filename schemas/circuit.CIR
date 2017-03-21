@@ -5,8 +5,25 @@ Program=Micro-Cap
 Screen=1600,1200
 MCAPVersion=9.0.7.0
 Key ID=2 233 293 684
-NLCnt=40
-TXCnt=1
+NLCnt=83
+TXCnt=3
+
+[shapedef]
+Name=Resistor
+PolyOpen=12 
+PolyLine=0,0
+PolyLine=0,0
+PolyLine=12,0
+PolyLine=14,-4
+PolyLine=18,4
+PolyLine=22,-4
+PolyLine=26,4
+PolyLine=30,-4
+PolyLine=34,4
+PolyLine=36,0
+PolyLine=48,0
+PolyLine=48,0
+Current=32,8,16,8
 
 [shapedef]
 Name=Capacitor
@@ -15,6 +32,10 @@ Line=22,-8,22,8
 Line=26,-8,26,8
 Line=26,0,48,0
 Current=32,12,16,12
+
+[shapedef]
+Name=Diode
+Root="Diode.root",0,-8,0
 
 [shapedef]
 Name=Ground
@@ -31,6 +52,17 @@ Arc=20,-4,28,4 , 24,-4,20,0
 Arc=20,-4,28,4 , 28,0,24,-4
 
 [shapedef]
+Name=Diode.root
+Line=0,0,20,0
+Line=28,0,48,0
+Rectangle=18,-8,20,8,SOLID
+PolyClosed=3 ,Solid
+PolyLine=20,0
+PolyLine=28,-8
+PolyLine=28,8
+Current=32,16,16,16
+
+[shapedef]
 Name=Arrow
 Line=-16,0,24,0
 PolyClosed=4 ,Solid
@@ -39,11 +71,16 @@ PolyLine=24,0
 PolyLine=16,-4
 PolyLine=16,4
 
+[shapedef]
+Name=Animated SPST Switch
+Animated SPST Switch=0,-8,48,8
+Current=16,8,32,8
+
 [compdef]
 Name=ATmega8A
 Definition=Macro
 Shape=AutoMacro
-Mask=28672
+Mask=29440
 Label Offset=20,4,-169,51
 PinCnt=28
 Pin="PC6",d,0,2,-19,-2
@@ -105,7 +142,7 @@ AutoRect=4,0,9,16
 Name=Capacitor
 Definition=Capacitor
 Shape=Capacitor
-Mask=7681
+Mask=7425
 memo=Capacitor
 Label Offset=16,12,12,12
 PinCnt=2
@@ -126,7 +163,7 @@ Pin="PinA",0,0,-3,-7
 Name=Arrow
 Definition=Blank
 Shape=Arrow
-Mask=5376
+Mask=5120
 memo=Arrow graphic
 Label Offset=-5,4,9,-12
 PinCnt=0
@@ -135,12 +172,45 @@ PinCnt=0
 Name=Jumper
 Definition=Jumper
 Shape=Jumper6
-Mask=1792
+Mask=0
 memo=Jumper to connect over pins
 Label Offset=0,0,7,10
 PinCnt=2
 Pin="PinA",0,0,-6,-5
 Pin="PinB",6,0,-7,-5
+
+[compdef]
+Name=Resistor
+Definition=Resistor
+Shape=Resistor
+Mask=6401
+memo=Resistor
+Label Offset=18,6,8,11
+PinCnt=2
+Pin="Plus",6,0,-10,-4
+Pin="Minus",0,0,-14,-4
+
+[compdef]
+Name=Diode
+Definition=Diode
+Shape=Diode
+Mask=5889
+memo=Diode
+Label Offset=17,10,12,12
+PinCnt=2
+Pin="Anode",6,0,-9,-8
+Pin="Cathode",0,0,-20,-8
+
+[compdef]
+Name=Animated SPST Switch
+Definition=ANIMATED SPST SWITCH
+Shape=Animated SPST Switch
+Mask=4352
+memo=Animated Single Pole, Single Throw Switch
+Label Offset=2,5,11,11
+PinCnt=2
+Pin="A",0,0,5,0
+Pin="B",6,0,-10,1
 
 [Circuit]
 Window Placement=2,3, -1,-1, -8,-30, 0,0,1066,723
@@ -470,9 +540,294 @@ Grids=96,58,98,58
 [Wire]
 Grids=88,58,90,58
 
+[Comp]
+Name=ATmega8A
+Style=ShowPinText
+ShowPackagePins=True
+Grid=76,129
+AutoMacroRect=2,0,15,30
+AutoMacroPinCnt=28
+AutoMacroPin="PC6",0,2,-19,-2
+AutoMacroPin="PD0",0,4,-19,0
+AutoMacroPin="PD1",0,6,-19,0
+AutoMacroPin="PD2",0,8,-19,0
+AutoMacroPin="PD3",0,10,-19,0
+AutoMacroPin="PD4",0,12,-19,0
+AutoMacroPin="VCC",0,14,-20,0
+AutoMacroPin="GND",0,16,-21,0
+AutoMacroPin="PB6",0,18,-19,0
+AutoMacroPin="PB7",0,20,-19,0
+AutoMacroPin="PD5",0,22,-19,0
+AutoMacroPin="PD6",0,24,-19,0
+AutoMacroPin="PD7",0,26,-19,0
+AutoMacroPin="PB0",0,28,-19,1
+AutoMacroPin="PC5",17,2,0,0
+AutoMacroPin="PC4",17,4,0,0
+AutoMacroPin="PC3",17,6,0,0
+AutoMacroPin="PC2",17,8,0,0
+AutoMacroPin="PC1",17,10,0,0
+AutoMacroPin="PC0",17,12,0,0
+AutoMacroPin="GND1",17,14,0,0
+AutoMacroPin="AREF",17,16,0,0
+AutoMacroPin="AVCC",17,18,0,0
+AutoMacroPin="PB5",17,20,0,0
+AutoMacroPin="PB4",17,22,0,0
+AutoMacroPin="PB3",17,24,0,0
+AutoMacroPin="PB2",17,26,0,0
+AutoMacroPin="PB1",17,28,0,0
+
+[Attr]
+ONV=20,4,PART,X3
+Style=8192
+
+[Attr]
+ONV=20,18,FILE,.\ATmega8A.MAC
+
+[Attr]
+ONV=0,0,PACKAGE,
+
+[Wire]
+Grids=71,119,71,131
+
+[Wire]
+Grids=69,145,76,145
+
+[Wire]
+Grids=109,107,109,110
+
+[Comp]
+Name=Resistor
+Grid=109,111
+Rot=1
+
+[Attr]
+ONV=8,11,PART,R1
+Style=8192
+
+[Attr]
+ONV=8,25,RESISTANCE,10k
+Style=8192
+
+[Attr]
+ONV=0,0,PACKAGE,
+
+[Comp]
+Name=Capacitor
+Grid=109,125
+Rot=5
+
+[Attr]
+ONV=12,-26,PART,C6
+Style=8192
+
+[Attr]
+ONV=12,-40,CAPACITANCE,33n
+Style=8192
+
+[Attr]
+ONV=0,0,PACKAGE,
+
+[Wire]
+Grids=109,117,109,119
+
+[Wire]
+Grids=109,119,117,119
+
+[Comp]
+Name=Diode
+Grid=117,111
+Rot=7
+
+[Attr]
+ONV=-29,12,PART,D1
+Style=8192
+
+[Attr]
+ONV=-76,26,MODEL,$GENERIC
+
+[Attr]
+ONV=0,0,PACKAGE,
+
+[Wire]
+Grids=117,117,117,119
+
+[Wire]
+Grids=117,110,117,111
+
+[Wire]
+Grids=109,110,117,110
+
+[Wire]
+Grids=109,110,109,111
+
+[Wire]
+Grids=71,119,98,119
+
+[Comp]
+Name=Ground
+Grid=109,125
+Rot=7
+
+[Wire]
+Grids=71,131,76,131
+
+[Wire]
+Grids=69,110,109,110
+
+[Wire]
+Grids=69,110,69,143
+
+[Wire]
+Grids=69,143,76,143
+
+[Wire]
+Grids=69,145,69,164
+
+[Wire]
+Grids=69,164,99,164
+
+[Wire]
+Grids=105,125,105,143
+
+[Wire]
+Grids=105,125,109,125
+
+[Wire]
+Grids=93,143,105,143
+
+[Wire]
+Grids=105,143,105,164
+
+[Wire]
+Grids=117,110,126,110
+
+[Comp]
+Name=Capacitor
+Grid=126,125
+Rot=5
+
+[Attr]
+ONV=12,-26,PART,C7
+Style=8192
+
+[Attr]
+ONV=12,-40,CAPACITANCE,100n
+Style=8192
+
+[Attr]
+ONV=0,0,PACKAGE,
+
+[Comp]
+Name=Resistor
+Grid=126,111
+Rot=1
+
+[Attr]
+ONV=8,11,PART,R2
+Style=8192
+
+[Attr]
+ONV=8,25,RESISTANCE,10k
+Style=8192
+
+[Attr]
+ONV=0,0,PACKAGE,
+
+[Wire]
+Grids=126,117,126,119
+
+[Wire]
+Grids=126,110,126,111
+
+[Comp]
+Name=Ground
+Grid=126,125
+Rot=7
+
+[Wire]
+Grids=121,119,126,119
+
+[Wire]
+Grids=121,119,121,147
+
+[Wire]
+Grids=93,147,121,147
+
+[Comp]
+Name=Animated SPST Switch
+Grid=98,119
+Rot=1
+
+[Attr]
+ONV=11,11,PART,Switch1
+
+[Attr]
+ONV=11,25,STATE,Open
+
+[Attr]
+ONV=11,39,RON,1m
+
+[Attr]
+ONV=11,53,ROFF,1e15
+
+[Attr]
+ONV=0,0,PACKAGE,
+
+[Wire]
+Grids=98,119,109,119
+
+[Comp]
+Name=Ground
+Grid=98,125
+Rot=7
+
+[Comp]
+Name=Capacitor
+Grid=99,156
+Rot=5
+
+[Attr]
+ONV=12,-26,PART,C8
+Style=8192
+
+[Attr]
+ONV=12,-40,CAPACITANCE,10u
+Style=8192
+
+[Attr]
+ONV=0,0,PACKAGE,
+
+[Wire]
+Grids=99,145,99,150
+
+[Wire]
+Grids=93,145,99,145
+
+[Wire]
+Grids=99,156,99,164
+
+[Wire]
+Grids=99,164,105,164
+
+[Object]
+Object=Rectangle
+CBorder=#000080
+Grids=59,103,140,178
+
 [Grid Text]
 Text="ST232 Typical Usage"
 Grid=90,93
+CBorder=NONE
+
+[Grid Text]
+Text="VCC"
+Grid=109,107
+Color=#FF0000
+CBorder=NONE
+
+[Grid Text]
+Text="ATmega8A Typical Usage"
+Grid=90,176
 CBorder=NONE
 
 [Schematic]
@@ -483,7 +838,7 @@ CurrentSection 3=0
 Splitter.xs=0
 Splitter.ys=0
 TextQuad=4099
-Scale=0.5
+Scale=1
 PrinterScale=1
 GridUser=10
 ShapeGroups="Main","Euro","DeMorgan","Polarity","Electrolytic","Main1"
@@ -583,8 +938,9 @@ Name=Main
 Scale 0=1
 Scale 1=1
 Scale 2=1
+SB 3=0,524
 Scale 3=1
-Grid=87,113
+Grid=116,159
 
 [Page]
 Index=1
