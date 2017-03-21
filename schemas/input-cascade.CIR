@@ -5,8 +5,8 @@ Program=Micro-Cap
 Screen=1600,1200
 MCAPVersion=9.0.7.0
 Key ID=2 233 293 684
-NLCnt=123
-TXCnt=22
+NLCnt=124
+TXCnt=25
 
 [shapedef]
 Name=Battery
@@ -138,6 +138,15 @@ Line=-2,0,2,0
 Line=0,-2,0,2
 
 [shapedef]
+Name=Arrow
+Line=-16,0,24,0
+PolyClosed=4 ,Solid
+PolyLine=24,0
+PolyLine=24,0
+PolyLine=16,-4
+PolyLine=16,4
+
+[shapedef]
 Name=Animated SPDT Switch
 Animated SPDT Switch=0,0,48,16
 Current=0,24,16,24
@@ -185,7 +194,7 @@ AutoRect=2,0,15,30
 Name=Opamp
 Definition=Opamp
 Shape=Opamp5
-Mask=4097
+Mask=5121
 memo=Opamp
 Label Offset=44,29,-14,39
 PinCnt=5
@@ -231,7 +240,7 @@ Pin="Cathode",0,0,-20,-8
 Name=Resistor
 Definition=Resistor
 Shape=Resistor
-Mask=6913
+Mask=6145
 memo=Resistor
 Label Offset=18,6,8,11
 PinCnt=2
@@ -242,7 +251,7 @@ Pin="Minus",0,0,-14,-4
 Name=Capacitor
 Definition=Capacitor
 Shape=Capacitor
-Mask=6145
+Mask=7169
 memo=Capacitor
 Label Offset=16,12,12,12
 PinCnt=2
@@ -253,7 +262,7 @@ Pin="Minus",0,0,-14,-5
 Name=Animated SPDT Switch
 Definition=ANIMATED SPDT SWITCH
 Shape=Animated SPDT Switch
-Mask=5120
+Mask=4096
 memo=Animated Single Pole, Double Throw Switch
 Label Offset=1,22,11,7
 PinCnt=3
@@ -288,12 +297,21 @@ Pin="PinC",a,8,0,-7,-3
 Name=Amp
 Definition=Macro
 Shape=Amp
-Mask=4864
+Mask=4096
 memo=Amplifier Macro
 Label Offset=54,3,12,39
 PinCnt=2
 Pin="PinA",a,0,0,-12,-3
 Pin="PinB",a,9,0,-12,-3
+
+[compdef]
+Name=Arrow
+Definition=Blank
+Shape=Arrow
+Mask=5120
+memo=Arrow graphic
+Label Offset=-5,4,9,-12
+PinCnt=0
 
 [Circuit]
 Window Placement=2,3, -1,-1, -8,-30, 0,0,1066,723
@@ -423,11 +441,11 @@ Rot=3
 Page=3
 
 [Attr]
-ONV=-26,-27,VALUE,15
+ONV=-26,-41,PART,V1
 Style=8192
 
 [Attr]
-ONV=-26,-41,PART,V1
+ONV=-26,-27,VALUE,15
 Style=8192
 
 [Comp]
@@ -443,11 +461,11 @@ Rot=3
 Page=3
 
 [Attr]
-ONV=-31,-27,VALUE,-15
+ONV=-26,-41,PART,V2
 Style=8192
 
 [Attr]
-ONV=-26,-41,PART,V2
+ONV=-31,-27,VALUE,-15
 Style=8192
 
 [Comp]
@@ -511,7 +529,7 @@ ONV=18,6,PART,R1
 Style=8192
 
 [Attr]
-ONV=18,20,RESISTANCE,470
+ONV=18,20,RESISTANCE,1M
 Style=8192
 
 [Attr]
@@ -529,7 +547,7 @@ ONV=18,6,PART,R2
 Style=8192
 
 [Attr]
-ONV=18,20,RESISTANCE,470
+ONV=18,20,RESISTANCE,470k
 Style=8192
 
 [Attr]
@@ -1077,7 +1095,6 @@ Rot=3
 
 [Attr]
 ONV=-60,-21,PART,Switch3
-Style=8192
 
 [Attr]
 ONV=-28,-35,STATE,DOWN
@@ -1222,6 +1239,21 @@ Grids=153,55,156,55
 [Wire]
 Grids=145,55,147,55
 
+[Comp]
+Name=Arrow
+Grid=29,18
+Rot=4
+
+[Attr]
+ONV=-5,-18,TEXT,~1u
+Style=8192
+
+[Grid Text]
+Text="~1V"
+Grid=55,25
+Color=#008000
+CBorder=NONE
+
 [Grid Text]
 Text="Input Cascade"
 Grid=16,4
@@ -1345,6 +1377,18 @@ Height=-16
 FStyle=2
 CBorder=NONE
 
+[Grid Text]
+Text="~1V"
+Grid=140,30
+Color=#008000
+CBorder=NONE
+
+[Grid Text]
+Text="~2.5V"
+Grid=163,71
+Color=#008000
+CBorder=NONE
+
 [Schematic]
 CurrentSection 0=0
 CurrentSection 1=0
@@ -1454,7 +1498,7 @@ Scale 0=1
 Scale 1=1
 Scale 2=1
 Scale 3=1
-Grid=163,97
+Grid=59,69
 
 [Page]
 Index=1
@@ -1463,7 +1507,6 @@ Type=Text
 Print=False
 Enable=True
 Name=Text
-SB 0=0,1
 
 [Page]
 Index=2
@@ -1472,7 +1515,6 @@ Type=Text
 Print=False
 Enable=True
 Name=Models
-SB 0=19,3
 
 [Page]
 Index=3
