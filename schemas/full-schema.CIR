@@ -852,19 +852,13 @@ Grids=269,174,277,174
 Color=#FF7D8D
 
 [Wire]
-Grids=59,160,104,160
-
-[Wire]
 Grids=32,114,59,114
 
 [Wire]
-Grids=59,114,59,160
+Grids=59,114,59,162
 
 [Wire]
-Grids=61,162,104,162
-
-[Wire]
-Grids=61,112,61,162
+Grids=61,112,61,160
 
 [Wire]
 Grids=32,112,61,112
@@ -1755,6 +1749,12 @@ Color=#FF7D8D
 [Wire]
 Grids=83,40,83,51
 
+[Wire]
+Grids=61,160,104,160
+
+[Wire]
+Grids=59,162,104,162
+
 [Grid Text]
 Text="VCC"
 Grid=240,8
@@ -2065,9 +2065,9 @@ Name=Main
 Scale 0=1
 Scale 1=1
 Scale 2=1
-SB 3=0,384
+SB 3=0,733
 Scale 3=1
-Grid=110,41
+Grid=59,160
 
 [Page]
 Index=1
