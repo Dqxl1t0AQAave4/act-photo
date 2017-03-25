@@ -6,8 +6,6 @@
 #define FOSC         1000000
 #define TC2_PRESCALE 1
 
-#define MAX_M        512
-
 #include "usart.h"
 #include "pwm.h"
 
@@ -35,16 +33,13 @@ sbyte kp = 1,       /* proportional factor */
       ki = -7,      /* memory factor       */
       ks = 0        /* scale factor        */
       ;
-int   m  = 128;     /* memory size         */
 
 bool  pause = false;/* USART async/sync owrite operation */
 bool  sync  = true; /* USART async/sync owrite operation */
 
 byte  adc1, adc2;   /* ADC 1st and 2nd channel */
 
-sbyte err[MAX_M];   /* e[i] */
-int   err_start_idx = 0;
-int   err_size      = 0;
+int   err = 0;      /* current error */
 
     
 /* Message Loop variables */
@@ -106,7 +101,7 @@ void process_command()
     switch(command)
     {
     case COMMAND_SET_COEFS:
-        if (isize() < 5) return; // S-kpki-kmks-St-St
+        if (isize() < 5) return; // S-kpki-00ks-St-St
         for (int i = 0; i < 5; i++) iread(args[i]);
         // validate data packet
         if ((args[0] != COMMAND_SET_COEFS)  ||
@@ -115,11 +110,7 @@ void process_command()
         // unpack data
         kp = ((args[1] >> 4) & 0x7); if ((args[1] >> 7) == 1) kp = -kp;
         ki = (args[1] & 0x7); if(((args[1] >> 3) & 0x1) == 1) ki = -ki;
-        m = 1 << ((args[2] >> 4) & 0xf); // positive only
         ks = (args[2] & 0xf);            // positive only
-        // execute command
-        err_start_idx = 0; // clear old data
-        err_size = 0;      // clear old data
         // answer
         ANSWER(answ, 4, COMMAND_SET_COEFS, _COMMAND_SET_COEFS)
         break;
@@ -160,52 +151,50 @@ void do_computations()
     /* Read ADC input */
   
     REMUX(0);                       /* 1st ADC channel                    */
-    ADCSR |= (1 << ADSC);          /* Initialize single-ended conversion */
-    while(!(ADCSR & (1 << ADIF)))  /* Wait for the end of the conversion */
+    ADCSR |= (1 << ADSC);           /* Initialize single-ended conversion */
+    while(!(ADCSR & (1 << ADIF)))   /* Wait for the end of the conversion */
       ;
     adc1 = ADCH;                    /* Read the 8-bit conversion result   */
-    ADCSR &= ~(1 << ADIF);         /* Clear Conversion Complete flag     */
+    ADCSR &= ~(1 << ADIF);          /* Clear Conversion Complete flag     */
     
     REMUX(1);                       /* 2nd ADC channel                    */
-    ADCSR |= (1 << ADSC);          /* Initialize single-ended conversion */
-    while(!(ADCSR & (1 << ADIF)))  /* Wait for the end of the conversion */
+    ADCSR |= (1 << ADSC);           /* Initialize single-ended conversion */
+    while(!(ADCSR & (1 << ADIF)))   /* Wait for the end of the conversion */
       ;
     adc2 = ADCH;                    /* Read the 8-bit conversion result   */
-    ADCSR &= ~(1 << ADIF);         /* Clear Conversion Complete flag     */
-    
-    if (err_size != m) err_size++;
-    ++err_start_idx;
-    if (err_start_idx == m) err_start_idx = 0;
-    err[err_start_idx] = sbyte((int(adc2) - int(adc1)) >> 1);
+    ADCSR &= ~(1 << ADIF);          /* Clear Conversion Complete flag     */
     
     /* Calculate PWM width */
     
-    int pwmw = 0;
-    for (int i = 1; i < err_size; i++)
+    int e = (int(adc2) - int(adc1));
+    int pwmw = ABS(err);
+    if (ulog2(pwmw) + ki < 15) // signed 16bit int = 2x 15bit
     {
-        int j = i + err_start_idx;
-        if (j >= err_size) j -= err_size;
-        pwmw += int(err[j]);
+        pwmw = (ki < 0 ? (err >> (-ki)) : (err << ki));
+        pwmw = safe_add(pwmw, (kp < 0 ? (e >> (-kp)) : (e << kp)));
     }
-    if (ki < 0) pwmw >>= (-ki);
-    else        pwmw <<= ki;
-    if (kp < 0) pwmw += (int(err[err_start_idx]) >> (-kp));
-    else        pwmw += (int(err[err_start_idx]) << kp);
+    else
+    {
+        pwmw = (err < 0 ? INT_MIN : INT_MAX);
+    }
+    
+    err = safe_add(err, e);
 
     /* Answer */
     
-    byte report[10];
+    byte report[11];
     report[2] = adc1;
     report[3] = adc2;
-    report[4] = err[err_start_idx];
-    report[5] = (pwmw >> 8);
-    report[6] = (pwmw & 0xff);
-    report[7] = byte(pwmw >> ks);
-    ANSWER(report, 10, COMMAND_SEND_DATA, _COMMAND_SEND_DATA);
+    report[4] = (((unsigned int) err) >> 8);
+    report[5] = (((unsigned int) err) & 0xff);
+    report[4] = (((unsigned int) pwmw) >> 8);
+    report[5] = (((unsigned int) pwmw) & 0xff);
+    report[8] = byte(pwmw >> ks);
+    ANSWER(report, 11, COMMAND_SEND_DATA, _COMMAND_SEND_DATA);
     
     /* Setup PWM width */
     
-    OCR2 = (pwmw >> ks);
+    OCR2 = ((pwmw < 0 ? INT_MAX + pwmw : ((unsigned int) pwmw) + INT_MAX) >> ks);
 }
 
 
@@ -214,7 +203,6 @@ void do_computations()
 
 int main()
 {
-    
     
     /* Initialization here */
     
