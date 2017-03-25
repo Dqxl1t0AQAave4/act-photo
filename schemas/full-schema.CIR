@@ -5,7 +5,7 @@ Program=Micro-Cap
 Screen=1600,1200
 MCAPVersion=9.0.7.0
 Key ID=2 233 293 684
-NLCnt=250
+NLCnt=248
 TXCnt=35
 
 [shapedef]
@@ -144,7 +144,7 @@ Pin="Cathode",0,0,-20,-8
 Name=Resistor
 Definition=Resistor
 Shape=Resistor
-Mask=6401
+Mask=6145
 memo=Resistor
 Label Offset=18,6,8,11
 PinCnt=2
@@ -155,7 +155,7 @@ Pin="Minus",0,0,-14,-4
 Name=Capacitor
 Definition=Capacitor
 Shape=Capacitor
-Mask=6657
+Mask=7169
 memo=Capacitor
 Label Offset=16,12,12,12
 PinCnt=2
@@ -344,12 +344,6 @@ Show Pin Connections=False
 Show Cross=False
 Show Attribute Text=True
 Show Grid Text=True
-
-[Object]
-Object=Diamond
-CFill=#FF0000
-CBorder=#000000
-Grids=19,115,27,120
 
 [Object]
 Object=Rectangle
@@ -828,7 +822,7 @@ Grids=121,176,277,176
 Grids=121,178,277,178
 
 [Wire]
-Grids=121,180,277,180
+Grids=121,180,208,180
 
 [Wire]
 Grids=65,158,99,158
@@ -1297,17 +1291,10 @@ Grids=58,38,81,38
 Grids=81,38,81,51
 
 [Wire]
-Grids=36,40,85,40
+Grids=36,40,83,40
 
 [Wire]
-Grids=85,40,85,51
-
-[Wire]
-Grids=33,42,83,42
-Color=#FF7D8D
-
-[Wire]
-Grids=83,42,83,51
+Grids=33,42,85,42
 Color=#FF7D8D
 
 [Wire]
@@ -1523,16 +1510,7 @@ Grid=240,56
 Rot=7
 
 [Wire]
-Grids=121,184,208,184
-
-[Wire]
-Grids=208,44,208,184
-
-[Object]
-Object=Diamond
-CFill=#FF0000
-CBorder=#000000
-Grids=116,182,124,187
+Grids=208,44,208,180
 
 [Object]
 Object=Rectangle
@@ -1767,6 +1745,16 @@ Color=#FF7D8D
 Grids=97,172,97,191
 Color=#FF7D8D
 
+[Wire]
+Grids=208,180,277,180
+
+[Wire]
+Grids=85,42,85,51
+Color=#FF7D8D
+
+[Wire]
+Grids=83,40,83,51
+
 [Grid Text]
 Text="VCC"
 Grid=240,8
@@ -1977,7 +1965,7 @@ CurrentSection 3=0
 Splitter.xs=0
 Splitter.ys=0
 TextQuad=4099
-Scale=2
+Scale=1
 PrinterScale=1
 GridUser=10
 ShapeGroups="Main","Euro","DeMorgan","Polarity","Electrolytic","Main1"
@@ -2077,8 +2065,9 @@ Name=Main
 Scale 0=1
 Scale 1=1
 Scale 2=1
-Scale 3=2
-Grid=248,81
+SB 3=0,384
+Scale 3=1
+Grid=110,41
 
 [Page]
 Index=1
