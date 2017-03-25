@@ -2,7 +2,7 @@
 
 #define IBUF_SIZE    16
 #define OBUF_SIZE    32
-#define BAUD_RATE    9600
+#define BAUD_RATE    4800
 #define FOSC         1000000
 #define TC2_PRESCALE 1
 
