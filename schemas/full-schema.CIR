@@ -1426,7 +1426,7 @@ ONV=8,11,PART,R15
 Style=8192
 
 [Attr]
-ONV=8,25,RESISTANCE,470
+ONV=8,25,RESISTANCE,2k
 Style=8192
 
 [Attr]
@@ -1647,7 +1647,7 @@ ONV=8,11,PART,R18
 Style=8192
 
 [Attr]
-ONV=8,25,RESISTANCE,10k
+ONV=8,25,RESISTANCE,100
 Style=8192
 
 [Attr]
@@ -2065,9 +2065,9 @@ Name=Main
 Scale 0=1
 Scale 1=1
 Scale 2=1
-SB 3=0,733
+SB 3=839,0
 Scale 3=1
-Grid=59,160
+Grid=265,59
 
 [Page]
 Index=1
