@@ -139,11 +139,12 @@ inline byte isize()
     return result;
 }
 
-inline void transmit(const byte &in)
+inline bool transmit(const byte &in)
 {
     NO_DATA_REG_EMPTY(
-        owrite(in);
+        bool result = owrite(in);
     );
+    return result;
 }
 
 inline bool receive(byte &out)

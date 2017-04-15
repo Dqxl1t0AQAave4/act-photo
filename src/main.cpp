@@ -54,8 +54,8 @@ sbyte kp = 1,       /* proportional factor */
       ks = 0        /* scale factor        */
       ;
 
-bool  pause = false;/* USART async/sync owrite operation */
-bool  sync  = true; /* USART async/sync owrite operation */
+bool  pause = false;/* USART async/sync transmit operation */
+bool  sync  = true; /* USART async/sync transmit operation */
 
 byte  adc1, adc2;   /* ADC 1st and 2nd channel */
 
@@ -93,14 +93,14 @@ void answer(byte *data, byte size)
     {
         for (int i = 0; i < size; i++)
         {
-            owrite(data[i]);
+            transmit(data[i]);
         }
     }
     else
     {
         for (int i = 0; i < size; i++)
         {
-            while (!owrite(data[i])) // wait in sync mode
+            while (!transmit(data[i])) // wait in sync mode
               ;
         }
     }
@@ -122,7 +122,7 @@ void process_command()
     {
     case COMMAND_SET_COEFS:
         if (isize() < 5) return; // S-kpki-00ks-St-St
-        for (int i = 0; i < 5; i++) iread(args[i]);
+        for (int i = 0; i < 5; i++) receive(args[i]);
         // validate data packet
         if ((args[0] != COMMAND_SET_COEFS)  ||
             (args[3] != _COMMAND_SET_COEFS) ||
@@ -136,7 +136,7 @@ void process_command()
         break;
     case COMMAND_SET_SYNC:
         if (isize() < 4) return; // S-sync-St-St
-        for (int i = 0; i < 4; i++) iread(args[i]);
+        for (int i = 0; i < 4; i++) receive(args[i]);
         // validate data packet
         if (args[0] != COMMAND_SET_SYNC  ||
             args[2] != _COMMAND_SET_SYNC ||
@@ -148,7 +148,7 @@ void process_command()
         break;
     case COMMAND_PAUSE:
         if (isize() < 3) return; // S-St-St
-        for (int i = 0; i < 3; i++) iread(args[i]);
+        for (int i = 0; i < 3; i++) receive(args[i]);
         // validate data packet
         if (args[0] != COMMAND_PAUSE  ||
             args[1] != _COMMAND_PAUSE ||
@@ -246,7 +246,7 @@ int main()
         }
         else
         {
-            command_present = iread(command);
+            command_present = receive(command);
         }
         
         
