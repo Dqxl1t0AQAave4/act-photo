@@ -214,7 +214,7 @@ void do_computations()
     
     /* Setup PWM width */
     
-    OCR2 = ((pwmw < 0 ? INT_MAX + pwmw : ((unsigned int) pwmw) + INT_MAX) >> ks);
+    OCR2 = (pwmw < 0 ? INT_MAX + (pwmw >> ks) : (((unsigned int) pwmw) >> ks) + INT_MAX);
 }
 
 
