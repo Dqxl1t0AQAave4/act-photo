@@ -28,8 +28,12 @@ inline byte ulog2 (unsigned int u)
 
 inline int safe_add(int a, int b)
 {
+    if (!(a >= 0 && b >= 0) && !(a <= 0 && b <= 0))
+    {
+        return a + b;
+    }
     int aa = ABS(a), ab = ABS(b);
-    if (INT_MAX - aa <= ab)
+    if (INT_MAX - aa >= ab)
     {
         return a + b;
     }
