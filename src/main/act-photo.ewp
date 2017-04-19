@@ -411,7 +411,7 @@
         </option>
         <option>
           <name>newCCIncludePaths</name>
-          <state></state>
+          <state>..\include\</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1963,16 +1963,7 @@
     </settings>
   </configuration>
   <file>
-    <name>$PROJ_DIR$\common.h</name>
-  </file>
-  <file>
     <name>$PROJ_DIR$\main.cpp</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\pwm.h</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\usart.h</name>
   </file>
 </project>
 
