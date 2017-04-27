@@ -13,6 +13,11 @@
 
 typedef unsigned char byte;
 typedef signed char sbyte;
+#ifndef DLIB
+typedef byte bool;
+#define true 1
+#define false 0
+#endif
 
 
 inline byte ulog2 (unsigned int u)

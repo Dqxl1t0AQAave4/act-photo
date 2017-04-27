@@ -133,19 +133,15 @@
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>1</state>
+          <state>4</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the normal configuration of the C/EC++</state>
-          <state>runtime library. No locale interface,</state>
-          <state>C locale, no file descriptor support,</state>
-          <state>no multibytes in printf and scanf, and</state>
-          <state>no hex floats in strtod.</state>
+          <state>Use the legacy C runtime library.</state>
         </option>
         <option>
           <name>RTConfigPath</name>
-          <state>$TOOLKIT_DIR$\LIB\DLIB\dlAVR-1s-ec_mul-n.h</state>
+          <state></state>
         </option>
         <option>
           <name>RTLibraryPath</name>
@@ -172,7 +168,7 @@
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>1</state>
+          <state>4</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
