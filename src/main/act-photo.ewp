@@ -324,7 +324,7 @@
         <option>
           <name>CCLockRegs</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptSizeSpeed</name>
