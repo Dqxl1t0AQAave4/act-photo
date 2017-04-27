@@ -1,18 +1,25 @@
 #pragma once
 
-// Requires IBUFSIZE and OBUFSIZE be defined
+/*
+ * #30 <bug>
+ *
+ *     Race encountered on `iobuf_state`.
+ *
+ *     Split it on `ibuf_state` and `obuf_state`.
+ *     Merge macro state constants (IBUF_NEMPTY, OBUF_NEMPTY
+ *     -> IOBUF_NEMPTY).
+ */
+
+// Requires IBUF_SIZE and OBUF_SIZE be defined
 // Requires BAUD_RATE, FOSC be defined
-// iobuf_state must be initialized
 
 #include "common.h"
 
 byte ibuf[IBUF_SIZE];
 byte obuf[OBUF_SIZE];
 
-#define IBUF_NEMPTY 0x1
-#define IBUF_NFULL  0x2
-#define OBUF_NEMPTY 0x4
-#define OBUF_NFULL  0x8
+#define IOBUF_NEMPTY 0x1
+#define IOBUF_NFULL  0x2
 
 /* Disables RXCIE, executes code, enables RXCIE */
 #define NO_RX_COMPLETE(code) \
@@ -26,12 +33,8 @@ byte obuf[OBUF_SIZE];
     code \
     UCSRB |= (1 << UDRIE); /* Enable Data Reg. Empty interrupt */
 
-/*
- * Since the variable to be accessed very often,
- * it seems necessary to declare it as __regvar.
- */
-__regvar __no_init
-volatile byte iobuf_state @ 15;
+__tiny volatile byte ibuf_state  = IOBUF_NFULL;
+__tiny volatile byte obuf_state  = IOBUF_NFULL;
 
 __tiny volatile byte ibuf_head   = 0;
 __tiny volatile byte ibuf_tail   = 0;
@@ -46,16 +49,16 @@ __tiny volatile byte obuf_tail   = 0;
  */
 inline bool iread(byte &out)
 {
-    if (iobuf_state & IBUF_NEMPTY) /* not empty */
+    if (ibuf_state & IOBUF_NEMPTY) /* not empty */
     {
         byte h = ibuf_head;
         out = ibuf[h++]; /* read byte */
         if (h == IBUF_SIZE) h = 0;
         if (h == ibuf_tail)
         {
-            iobuf_state &= ~IBUF_NEMPTY /* mark empty */;
+            ibuf_state &= ~IOBUF_NEMPTY /* mark empty */;
         }
-        iobuf_state |= IBUF_NFULL /* mark not full */;
+        ibuf_state |= IOBUF_NFULL /* mark not full */;
         ibuf_head = h;
         return true;
     }
@@ -64,16 +67,16 @@ inline bool iread(byte &out)
 
 /* Accessed in the interruption code */
 /*
- * Writes the byte to output buffer.
+ * Writes the byte to input buffer.
  */
 #define _iwrite(in) \
-    if (iobuf_state & IBUF_NFULL) /* not full */ \
+    if (ibuf_state & IOBUF_NFULL) /* not full */ \
     { \
         byte t = ibuf_tail; \
         ibuf[t++] = in; /* write byte */ \
         if (t == IBUF_SIZE) t = 0; \
-        if (t == ibuf_head) iobuf_state &= ~IBUF_NFULL /* make full */; \
-        iobuf_state |= IBUF_NEMPTY /* mark not empty */; \
+        if (t == ibuf_head) ibuf_state &= ~IOBUF_NFULL /* make full */; \
+        ibuf_state |= IOBUF_NEMPTY /* mark not empty */; \
         ibuf_tail = t; \
     }
 
@@ -84,13 +87,13 @@ inline bool iread(byte &out)
  * Keeps further USART interrupts disabled on failure.
  */
 #define _oread(out) \
-    if (iobuf_state & OBUF_NEMPTY) /* not empty */ \
+    if (obuf_state & IOBUF_NEMPTY) /* not empty */ \
     { \
         byte h = obuf_head; \
         out = obuf[h++]; /* read byte */ \
         if (h == OBUF_SIZE) h = 0; \
-        if (h == obuf_tail) iobuf_state &= ~OBUF_NEMPTY; /* mark empty */ \
-        iobuf_state |= OBUF_NFULL; /* mark not full */ \
+        if (h == obuf_tail) obuf_state &= ~IOBUF_NEMPTY; /* mark empty */ \
+        obuf_state |= IOBUF_NFULL; /* mark not full */ \
         obuf_head = h; \
         UCSRB |= (1 << UDRIE); /* Enable Data Reg. Empty interrupt */ \
     }
@@ -104,13 +107,13 @@ inline bool iread(byte &out)
  */
 inline bool owrite(const byte &in)
 {
-    if (iobuf_state & OBUF_NFULL) /* not full */
+    if (obuf_state & IOBUF_NFULL) /* not full */
     {
         byte t = obuf_tail;
         obuf[t++] = in; /* write byte */
         if (t == OBUF_SIZE) t = 0;
-        if (t == obuf_head) iobuf_state &= ~OBUF_NFULL /* make full */;
-        iobuf_state |= OBUF_NEMPTY; /* mark not empty */
+        if (t == obuf_head) obuf_state &= ~IOBUF_NFULL /* make full */;
+        obuf_state |= IOBUF_NEMPTY; /* mark not empty */
         obuf_tail = t;
         return true;
     }
@@ -121,7 +124,7 @@ inline byte isize()
 {
     NO_RX_COMPLETE(
         byte result = 0;
-        if (iobuf_state & IBUF_NEMPTY) /* not empty */
+        if (ibuf_state & IOBUF_NEMPTY) /* not empty */
         {
             /* Warnings are unreasonable for this block since
                interrupts are disabled and no concurrent
@@ -185,7 +188,6 @@ __interrupt void usart_udre_interrupt_handler()
 /* Disable interrupts (see ATmega8A datasheet) */
 inline __monitor void usart_init()
 {
-    iobuf_state = IBUF_NFULL | OBUF_NFULL;
     const int ubrr = FOSC/16/BAUD_RATE-1;
     /* Set baud rate */
     UBRRH = (unsigned char) (ubrr>>8);
