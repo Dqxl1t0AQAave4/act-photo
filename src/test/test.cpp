@@ -47,6 +47,8 @@ int main()
     
     init();
     
+    __enable_interrupt();
+    
     
     /* Program Loop */
     
