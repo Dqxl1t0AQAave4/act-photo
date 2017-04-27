@@ -200,7 +200,7 @@ __interrupt void usart_udre_interrupt_handler()
 
 
 
-inline bool transmit(const byte &in)
+inline bool transmit(const byte in)
 {
     NO_DATA_REG_EMPTY(
         bool result = _owrite(&in, 1);
@@ -208,7 +208,7 @@ inline bool transmit(const byte &in)
     return result;
 }
 
-inline bool transmit(const byte *in, byte size)
+inline bool transmit_all(const byte *in, byte size)
 {
     NO_DATA_REG_EMPTY(
         bool result = _owrite(in, size);
@@ -216,15 +216,15 @@ inline bool transmit(const byte *in, byte size)
     return result;
 }
 
-inline bool receive(byte &out)
+inline bool receive(byte *out)
 {
     NO_RX_COMPLETE(
-        bool result = _iread(&out, 1);
+        bool result = _iread(out, 1);
     );
     return result;
 }
 
-inline bool receive(byte *out, byte size)
+inline bool receive_all(byte *out, byte size)
 {
     NO_RX_COMPLETE(
         bool result = _iread(out, size);

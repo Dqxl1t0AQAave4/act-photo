@@ -140,25 +140,25 @@ byte command_variable;
 bool command_variable_present = false;
 
 
-#define METHOD_GET     byte(0)
-#define METHOD_SET     byte(1)
-#define METHOD_ECHO    byte(2)
+#define METHOD_GET     (byte) 0
+#define METHOD_SET     (byte) 1
+#define METHOD_ECHO    (byte) 2
 
 // SET
-#define VAR_PAUSE      byte(0)
-#define VAR_SYNC_USART byte(1)
-#define VAR_KP         byte(2)
-#define VAR_KI         byte(3)
-#define VAR_KS         byte(4)
+#define VAR_PAUSE      (byte) 0
+#define VAR_SYNC_USART (byte) 1
+#define VAR_KP         (byte) 2
+#define VAR_KI         (byte) 3
+#define VAR_KS         (byte) 4
 
 // GET
-#define NO_OUTPUT      byte(0)
-#define VAR_ADC1       byte(1)
-#define VAR_ADC2       byte(2)
-#define VAR_INT_ERR    byte(3)
-#define VAR_CUR_ERR    byte(4)
-#define VAR_PWM        byte(5)
-#define VAR_OCR2       byte(6)
+#define NO_OUTPUT      (byte) 0
+#define VAR_ADC1       (byte) 1
+#define VAR_ADC2       (byte) 2
+#define VAR_INT_ERR    (byte) 3
+#define VAR_CUR_ERR    (byte) 4
+#define VAR_PWM        (byte) 5
+#define VAR_OCR2       (byte) 6
 
 
 byte output_mode = NO_OUTPUT;
@@ -178,30 +178,30 @@ byte output_mode = NO_OUTPUT;
 
 
 
-void send(byte *data, byte size)
+void send_all(byte *data, byte size)
 {
     if (!sync)
     {
-        transmit(data, size);
+        transmit_all(data, size);
     }
     else
     {
-        while (!transmit(data, size)) // wait in sync mode
+        while (!transmit_all(data, size)) // wait in sync mode
             ;
     }
 }
 
 
-void send(byte data)
+void send_byte(byte data)
 {
-    send(&data, 1);
+    send_all(&data, 1);
 }
 
 
-void send(unsigned int data)
+void send_int(unsigned int data)
 {
-    byte lo_hi[2] = { byte(data & 0xff), byte(data >> 8) };
-    send(lo_hi, 2);
+    byte lo_hi[2] = { (byte) (data & 0xff), (byte) (data >> 8) };
+    send_all(lo_hi, 2);
 }
 
 
@@ -219,7 +219,7 @@ void send(unsigned int data)
 bool process_set_variable()
 {
     byte value;
-    if (!receive(value)) return false; // wait for the value
+    if (!receive(&value)) return false; // wait for the value
     switch(command_variable)
     {
     case VAR_PAUSE:
@@ -244,21 +244,21 @@ bool process_set_variable()
 
 void process_command()
 {
+    byte echo_value;
     switch(command_method)
     {
     case METHOD_ECHO:
-        byte value;
-        if (!receive(value)) return; // wait for the value to send back
-        send(value);
+        if (!receive(&echo_value)) return; // wait for the value to send back
+        send_byte(echo_value);
         break;
     case METHOD_GET:
-        if (!receive(output_mode)) return; // wait for the variable
+        if (!receive(&output_mode)) return; // wait for the variable
         break;
     case METHOD_SET:
         // wait for the variable
         if (!command_variable_present)
         {
-            if (!(command_variable_present = receive(command_variable))) return;
+            if (!(command_variable_present = receive(&command_variable))) return;
         }
         if (!process_set_variable()) return; // wait for the argument(s)
         break;
@@ -303,7 +303,7 @@ void do_computations()
      * pwmw = KP * e + KI * err, where KP = 2^kp, KI = 2^ki
      */
     
-    int e = (int(adc2) - int(adc1));
+    int e = ((int)(adc2) - (int)(adc1));
     int pwmw = ABS(err);
     if (ulog2(pwmw) + ki <= 15) // signed 16bit int = sign bit + 15bit
     {
@@ -338,22 +338,22 @@ void do_computations()
     case NO_OUTPUT:
         break;
     case VAR_ADC1:
-        send(adc1);
+        send_byte(adc1);
         break;
     case VAR_ADC2:
-        send(adc2);
+        send_byte(adc2);
         break;
     case VAR_INT_ERR:
-        send((unsigned int) err);
+        send_int(err);
         break;
     case VAR_CUR_ERR:
-        send((unsigned int) e);
+        send_int(e);
         break;
     case VAR_PWM:
-        send((unsigned int) pwmw);
+        send_int(pwmw);
         break;
     case VAR_OCR2:
-        send(OCR2);
+        send_byte(OCR2);
         break;
     }
 }
@@ -397,7 +397,7 @@ int main()
         }
         else
         {
-            command_present = receive(command_method);
+            command_present = receive(&command_method);
         }
         
         
