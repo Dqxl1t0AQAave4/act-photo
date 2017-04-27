@@ -15,11 +15,8 @@
 
 #include "common.h"
 
-byte ibuf[IBUF_SIZE];
-byte obuf[OBUF_SIZE];
 
-#define IOBUF_NEMPTY 0x1
-#define IOBUF_NFULL  0x2
+
 
 /* Disables RXCIE, executes code, enables RXCIE */
 #define NO_RX_COMPLETE(code) \
@@ -33,6 +30,23 @@ byte obuf[OBUF_SIZE];
     code \
     UCSRB |= (1 << UDRIE); /* Enable Data Reg. Empty interrupt */
 
+
+
+
+/*
+ * Marked `volatile` to prevent data caching
+ * and other effects as the data is to be accessed
+ * from both the interrupt and user code.
+ */
+
+volatile byte ibuf[IBUF_SIZE];
+volatile byte obuf[OBUF_SIZE];
+
+
+#define IOBUF_NEMPTY 0x1
+#define IOBUF_NFULL  0x2
+
+
 __tiny volatile byte ibuf_state  = IOBUF_NFULL;
 __tiny volatile byte obuf_state  = IOBUF_NFULL;
 
@@ -41,13 +55,17 @@ __tiny volatile byte ibuf_tail   = 0;
 __tiny volatile byte obuf_head   = 0;
 __tiny volatile byte obuf_tail   = 0;
 
-/* Accessed by the user code; USART interrupts must be disabled manually */
+
+
+
+
+/* Accessed from the user code; USART interrupts must be disabled manually */
 /*
  * Reads a byte from input buffer.
  *
  * Returns true if byte was actually read, false otherwise
  */
-inline bool iread(byte &out)
+inline bool _iread(byte &out)
 {
     if (ibuf_state & IOBUF_NEMPTY) /* not empty */
     {
@@ -65,7 +83,11 @@ inline bool iread(byte &out)
     return false;
 }
 
-/* Accessed in the interruption code */
+
+
+
+
+/* Accessed from the interrupt */
 /*
  * Writes the byte to input buffer.
  */
@@ -80,11 +102,15 @@ inline bool iread(byte &out)
         ibuf_tail = t; \
     }
 
-/* Accessed in the interruption code */
+
+
+
+
+/* Accessed from the interrupt */
 /*
  * Reads a byte from output buffer.
  *
- * Keeps further USART interrupts disabled on failure.
+ * Enables further USART interrupts on success.
  */
 #define _oread(out) \
     if (obuf_state & IOBUF_NEMPTY) /* not empty */ \
@@ -99,13 +125,16 @@ inline bool iread(byte &out)
     }
 
 
-/* Accessed by the user code; USART interrupts must be disabled manually */
+
+
+
+/* Accessed from the user code; USART interrupts must be disabled manually */
 /*
  * Writes the byte to output buffer.
  *
  * Returns true if byte was actually written, false otherwise
  */
-inline bool owrite(const byte &in)
+inline bool _owrite(const byte &in)
 {
     if (obuf_state & IOBUF_NFULL) /* not full */
     {
@@ -119,6 +148,10 @@ inline bool owrite(const byte &in)
     }
     return false;
 }
+
+
+
+
 
 inline byte isize()
 {
@@ -142,10 +175,14 @@ inline byte isize()
     return result;
 }
 
+
+
+
+
 inline bool transmit(const byte &in)
 {
     NO_DATA_REG_EMPTY(
-        bool result = owrite(in);
+        bool result = _owrite(in);
     );
     return result;
 }
@@ -153,10 +190,14 @@ inline bool transmit(const byte &in)
 inline bool receive(byte &out)
 {
     NO_RX_COMPLETE(
-        bool result = iread(out);
+        bool result = _iread(out);
     );
     return result;
 }
+
+
+
+
 
 #pragma vector=USART_RXC_vect
 __interrupt void usart_rxc_interrupt_handler()
@@ -184,6 +225,10 @@ __interrupt void usart_udre_interrupt_handler()
     
     _oread(UDR); /* Writes to UDR */
 }
+
+
+
+
 
 /* Disable interrupts (see ATmega8A datasheet) */
 inline __monitor void usart_init()
