@@ -118,14 +118,19 @@ int   err = 0;        /* current error                       */
  * `SET` method also requires the variable value (1..any bytes)
  * to be set.
  *
- * COMMAND = (METHOD) [CONTENT]
- * METHOD = SET | GET | ECHO | any    1 byte
+ * COMMAND = METHOD [CONTENT]
+ * METHOD = `SET` | `GET` | `ECHO` | BYTE
  * CONTENT = {
- *     METHOD=SET  => VARIABLE,       any bytes
- *     METHOD=GET  => VARIABLE,       1 byte
- *     METHOD=ECHO => DATA,           1 byte
- *     METHOD=any  => any             any bytes
+ *     METHOD=`SET`  => VARIABLE [DATA],
+ *     METHOD=`GET`  => VARIABLE,
+ *     METHOD=`ECHO` => BYTE,
+ *     METHOD=any    => any
  * }
+ * VARIABLE = BYTE
+ * DATA = any
+ *
+ * BYTE = 1 any byte
+ * any = any bytes
  */
 
 
