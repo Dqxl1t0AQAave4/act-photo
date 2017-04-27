@@ -150,20 +150,20 @@
         <option>
           <name>Input variant</name>
           <version>0</version>
-          <state>3</state>
+          <state>2</state>
         </option>
         <option>
           <name>Input description</name>
-          <state></state>
+          <state>No float.</state>
         </option>
         <option>
           <name>Output variant</name>
           <version>0</version>
-          <state>4</state>
+          <state>3</state>
         </option>
         <option>
           <name>Output description</name>
-          <state></state>
+          <state>No float, no field width, no precision.</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
@@ -329,12 +329,12 @@
         <option>
           <name>CCOptimization</name>
           <version>1</version>
-          <state>1</state>
+          <state>4</state>
         </option>
         <option>
           <name>CCAllowList</name>
           <version>3</version>
-          <state>000000</state>
+          <state>111111</state>
         </option>
         <option>
           <name>CCCrossCallPassesList</name>
@@ -351,7 +351,7 @@
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCNoErrorMsg</name>
@@ -416,6 +416,7 @@
         <option>
           <name>CCStdIncludePaths</name>
           <state>$TOOLKIT_DIR$\INC\</state>
+          <state>$TOOLKIT_DIR$\INC\CLIB\</state>
         </option>
         <option>
           <name>CCEepromSize</name>
@@ -432,7 +433,7 @@
         <option>
           <name>CCOptimizationSlave</name>
           <version>1</version>
-          <state>1</state>
+          <state>4</state>
         </option>
         <option>
           <name>CCOutputFile</name>
@@ -440,7 +441,7 @@
         </option>
         <option>
           <name>CCLangSelect</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CompilerMisraOverride</name>
@@ -898,7 +899,7 @@
         </option>
         <option>
           <name>xcProgramEntryLabelSelect</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>ListOutputFormat</name>
