@@ -1,16 +1,42 @@
 #include <common.h>
 
+
+
+
+// ========================================================================
+// ===================== Critical Macrodefinitions ========================
+// ========================================================================
+
+
+
+
+/*
+ * FOSC = 1MHz is confugured via Flash Fuses CKSEL=1 and SUT=2.
+ */
+
 #define IBUF_SIZE    16
 #define OBUF_SIZE    32
-#define BAUD_RATE    4800
-#define FOSC         1000000
-#define TC2_PRESCALE 1
+#define BAUD_RATE    4800    // 4.8kbps
+#define FOSC         1000000 // 1MHz
+#define TC2_PRESCALE 1       // no Timer/Counter2 prescale
+
+
 
 #include <usart.h>
 #include <pwm.h>
 
 
+
 #define REMUX(c) ADMUX = (3<<REFS0)|(1<<ADLAR)|(c<<MUX0)
+
+
+
+
+// ========================================================================
+// ===================== Initialization ===================================
+// ========================================================================
+
+
 
 
 inline __monitor void init()
@@ -44,126 +70,213 @@ inline __monitor void init()
            (0<<DDD3)|(0<<DDD4)|(0<<DDD5)|
            (0<<DDD6)|(0<<DDD7);
 }
-    
-    
-/* Common variables */
 
 
-sbyte kp = 1,       /* proportional factor */
-      ki = -7,      /* memory factor       */
-      ks = 0        /* scale factor        */
+
+
+
+// ========================================================================
+// ===================== Common Variables =================================
+// ========================================================================
+
+
+
+
+
+sbyte kp = 1,         /* proportional factor                 */
+      ki = -7,        /* memory factor                       */
+      ks = 8          /* scale factor                        */
       ;
 
-bool  pause = false;/* USART async/sync transmit operation */
-bool  sync  = true; /* USART async/sync transmit operation */
+bool  pause  = false; /* paused state                        */
+bool  sync   = false; /* USART async/sync transmit operation */
 
-byte  adc1, adc2;   /* ADC 1st and 2nd channel */
+byte  adc1, adc2;     /* ADC 1st and 2nd channel             */
 
-int   err = 0;      /* current error */
-
-    
-/* Message Loop variables */
+int   err = 0;        /* current error                       */
 
 
-byte command;
+
+
+
+// ========================================================================
+// ===================== Message Loop Variables ===========================
+// ========================================================================
+
+
+
+
+/*
+ * #33 <enchancement>
+ *
+ *     Simplify IO protocol.
+ *
+ * The new protocol is user-friendly and quite simple.
+ * The typical command starts with `METHOD`
+ * (1 byte: `SET`, `GET`, `ECHO`, etc.). The next byte is
+ * method-dependent. E.g. `VARIABLE` for `SET` and `GET`.
+ * `SET` method also requires the variable value (1..any bytes)
+ * to be set.
+ *
+ * COMMAND = METHOD [CONTENT]
+ * METHOD = `SET` | `GET` | `ECHO` | BYTE
+ * CONTENT = {
+ *     METHOD=`SET`  => VARIABLE [DATA],
+ *     METHOD=`GET`  => VARIABLE,
+ *     METHOD=`ECHO` => BYTE,
+ *     METHOD=BYTE   => any
+ * }
+ * VARIABLE = BYTE
+ * DATA = any
+ *
+ * BYTE = 1 any byte
+ * any = any bytes
+ */
+
+
+byte command_method;
 bool command_present = false;
+byte command_variable;
+bool command_variable_present = false;
 
 
-/* Input messages */
+#define METHOD_GET     byte(0)
+#define METHOD_SET     byte(1)
+#define METHOD_ECHO    byte(2)
+
+// SET
+#define VAR_PAUSE      byte(0)
+#define VAR_SYNC_USART byte(1)
+#define VAR_KP         byte(2)
+#define VAR_KI         byte(3)
+#define VAR_KS         byte(4)
+
+// GET
+#define NO_OUTPUT      byte(0)
+#define VAR_ADC1       byte(1)
+#define VAR_ADC2       byte(2)
+#define VAR_INT_ERR    byte(3)
+#define VAR_CUR_ERR    byte(4)
+#define VAR_PWM        byte(5)
+#define VAR_OCR2       byte(6)
 
 
-#define COMMAND_SET_COEFS  byte(0xFC)
-#define COMMAND_SET_SYNC   byte(0xFD)
-#define COMMAND_PAUSE      byte(0xFE)
-#define _COMMAND_SET_COEFS byte(~0xFC)
-#define _COMMAND_SET_SYNC  byte(~0xFD)
-#define _COMMAND_PAUSE     byte(~0xFE)
+byte output_mode = NO_OUTPUT;
 
 
-/* Output messages */
 
 
-#define COMMAND_SEND_DATA  byte(0xFF)
-#define _COMMAND_SEND_DATA byte(~0xFF)
 
 
-void answer(byte *data, byte size)
+// ========================================================================
+// ===================== Utility Functions ================================
+// ========================================================================
+
+
+
+
+
+
+
+void send(byte *data, byte size)
 {
     if (!sync)
     {
-        for (int i = 0; i < size; i++)
-        {
-            transmit(data[i]);
-        }
+        transmit(data, size);
     }
     else
     {
-        for (int i = 0; i < size; i++)
-        {
-            while (!transmit(data[i])) // wait in sync mode
-              ;
-        }
+        while (!transmit(data, size)) // wait in sync mode
+            ;
     }
 }
 
 
-#define ANSWER(arr,size,cmd, ncmd) \
-  arr[0] = cmd; arr[1] = cmd; arr[size-1] = ncmd; arr[size-2] = ncmd; answer(arr, size);
+void send(byte data)
+{
+    send(&data, 1);
+}
 
 
-/* Command processor */
+void send(unsigned int data)
+{
+    byte lo_hi[2] = { byte(data & 0xff), byte(data >> 8) };
+    send(lo_hi, 2);
+}
+
+
+
+
+
+// ========================================================================
+// ===================== Command Processors ===============================
+// ========================================================================
+
+
+
+
+
+bool process_set_variable()
+{
+    byte value;
+    if (!receive(value)) return false; // wait for the value
+    switch(command_variable)
+    {
+    case VAR_PAUSE:
+        pause = value;
+        break;
+    case VAR_SYNC_USART:
+        sync = value;
+        break;
+    case VAR_KP:
+        kp = (sbyte) value;
+        break;
+    case VAR_KI:
+        ki = (sbyte) value;
+        break;
+    case VAR_KS:
+        ks = (sbyte) value;
+        break;
+    }
+    return true;
+}
 
 
 void process_command()
 {
-    byte args[5];
-    byte answ[4];
-    switch(command)
+    switch(command_method)
     {
-    case COMMAND_SET_COEFS:
-        if (isize() < 5) return; // S-kpki-00ks-St-St
-        for (int i = 0; i < 5; i++) receive(args[i]);
-        // validate data packet
-        if ((args[0] != COMMAND_SET_COEFS)  ||
-            (args[3] != _COMMAND_SET_COEFS) ||
-            (args[4] != _COMMAND_SET_COEFS)) break;
-        // unpack data
-        kp = ((args[1] >> 4) & 0x7); if ((args[1] >> 7) == 1) kp = -kp;
-        ki = (args[1] & 0x7); if(((args[1] >> 3) & 0x1) == 1) ki = -ki;
-        ks = (args[2] & 0xf);            // positive only
-        // answer
-        ANSWER(answ, 4, COMMAND_SET_COEFS, _COMMAND_SET_COEFS)
+    case METHOD_ECHO:
+        byte value;
+        if (!receive(value)) return; // wait for the value to send back
+        send(value);
         break;
-    case COMMAND_SET_SYNC:
-        if (isize() < 4) return; // S-sync-St-St
-        for (int i = 0; i < 4; i++) receive(args[i]);
-        // validate data packet
-        if (args[0] != COMMAND_SET_SYNC  ||
-            args[2] != _COMMAND_SET_SYNC ||
-            args[3] != _COMMAND_SET_SYNC) break;
-        // unpack data
-        sync = args[1];
-        // answer
-        ANSWER(answ, 4, COMMAND_SET_SYNC, _COMMAND_SET_SYNC)
+    case METHOD_GET:
+        if (!receive(output_mode)) return; // wait for the variable
         break;
-    case COMMAND_PAUSE:
-        if (isize() < 3) return; // S-St-St
-        for (int i = 0; i < 3; i++) receive(args[i]);
-        // validate data packet
-        if (args[0] != COMMAND_PAUSE  ||
-            args[1] != _COMMAND_PAUSE ||
-            args[3] != _COMMAND_PAUSE) break;
-        // execute
-        pause = !pause;
-        // answer
-        ANSWER(answ, 4, COMMAND_SET_SYNC, _COMMAND_SET_SYNC)
+    case METHOD_SET:
+        // wait for the variable
+        if (!command_variable_present)
+        {
+            if (!(command_variable_present = receive(command_variable))) return;
+        }
+        if (!process_set_variable()) return; // wait for the argument(s)
         break;
     }
     command_present = false;
+    command_variable_present = false;
 }
 
 
-/* Program logic */
+
+
+
+// ========================================================================
+// ===================== Program Logic ====================================
+// ========================================================================
+
+
+
 
 
 void do_computations()
@@ -186,9 +299,13 @@ void do_computations()
     
     /* Calculate PWM width */
     
+    /*
+     * pwmw = KP * e + KI * err, where KP = 2^kp, KI = 2^ki
+     */
+    
     int e = (int(adc2) - int(adc1));
     int pwmw = ABS(err);
-    if (ulog2(pwmw) + ki < 15) // signed 16bit int = 2x 15bit
+    if (ulog2(pwmw) + ki <= 15) // signed 16bit int = sign bit + 15bit
     {
         pwmw = (ki < 0 ? (err >> (-ki)) : (err << ki));
         pwmw = safe_add(pwmw, (kp < 0 ? (e >> (-kp)) : (e << kp)));
@@ -199,26 +316,58 @@ void do_computations()
     }
     
     err = safe_add(err, e);
-
-    /* Answer */
-    
-    byte report[11];
-    report[2] = adc1;
-    report[3] = adc2;
-    report[4] = (((unsigned int) err) >> 8);
-    report[5] = (((unsigned int) err) & 0xff);
-    report[4] = (((unsigned int) pwmw) >> 8);
-    report[5] = (((unsigned int) pwmw) & 0xff);
-    report[8] = byte(pwmw >> ks);
-    ANSWER(report, 11, COMMAND_SEND_DATA, _COMMAND_SEND_DATA);
     
     /* Setup PWM width */
     
-    OCR2 = (pwmw < 0 ? INT_MAX + (pwmw >> ks) : (((unsigned int) pwmw) >> ks) + INT_MAX);
+    /*
+     * Must transform pwmw from signed int to unsigned byte.
+     * Add INT_MAX to get rid of negative values and divide
+     * by 2^ks.
+     */
+    
+    OCR2 = (
+               pwmw < 0 ?
+               INT_MAX + pwmw :
+               (unsigned int) (pwmw) + INT_MAX
+           ) >> ks;
+
+    /* Report back */
+    
+    switch(output_mode)
+    {
+    case NO_OUTPUT:
+        break;
+    case VAR_ADC1:
+        send(adc1);
+        break;
+    case VAR_ADC2:
+        send(adc2);
+        break;
+    case VAR_INT_ERR:
+        send((unsigned int) err);
+        break;
+    case VAR_CUR_ERR:
+        send((unsigned int) e);
+        break;
+    case VAR_PWM:
+        send((unsigned int) pwmw);
+        break;
+    case VAR_OCR2:
+        send(OCR2);
+        break;
+    }
 }
 
 
-/* Program entry point */
+
+
+
+// ========================================================================
+// ===================== Program Entry Point ==============================
+// ========================================================================
+
+
+
 
 
 int main()
@@ -248,7 +397,7 @@ int main()
         }
         else
         {
-            command_present = receive(command);
+            command_present = receive(command_method);
         }
         
         
