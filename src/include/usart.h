@@ -1,5 +1,8 @@
 #pragma once
 
+// Requires IBUF_SIZE and OBUF_SIZE be defined
+// Requires BAUD_RATE, FOSC be defined
+
 /*
  * #30 <bug>
  *
@@ -10,16 +13,13 @@
  *     -> IOBUF_NEMPTY).
  */
 
-// Requires IBUF_SIZE and OBUF_SIZE be defined
-// Requires BAUD_RATE, FOSC be defined
+
+
 
 #include "common.h"
 
-byte ibuf[IBUF_SIZE];
-byte obuf[OBUF_SIZE];
 
-#define IOBUF_NEMPTY 0x1
-#define IOBUF_NFULL  0x2
+
 
 /* Disables RXCIE, executes code, enables RXCIE */
 #define NO_RX_COMPLETE(code) \
@@ -33,130 +33,129 @@ byte obuf[OBUF_SIZE];
     code \
     UCSRB |= (1 << UDRIE); /* Enable Data Reg. Empty interrupt */
 
-__tiny volatile byte ibuf_state  = IOBUF_NFULL;
-__tiny volatile byte obuf_state  = IOBUF_NFULL;
 
-__tiny volatile byte ibuf_head   = 0;
-__tiny volatile byte ibuf_tail   = 0;
-__tiny volatile byte obuf_head   = 0;
-__tiny volatile byte obuf_tail   = 0;
 
-/* Accessed by the user code; USART interrupts must be disabled manually */
+
 /*
- * Reads a byte from input buffer.
- *
- * Returns true if byte was actually read, false otherwise
+ * Marked `volatile` to prevent data caching
+ * and other effects as the data is to be accessed
+ * from both the interrupt and user code.
  */
-inline bool iread(byte &out)
+
+volatile byte ibuf[IBUF_SIZE];
+volatile byte obuf[OBUF_SIZE];
+
+__tiny volatile byte ibuf_size = 0;
+__tiny volatile byte obuf_size = 0;
+
+__tiny volatile byte ibuf_head = 0;
+__tiny volatile byte ibuf_tail = 0;
+__tiny volatile byte obuf_head = 0;
+__tiny volatile byte obuf_tail = 0;
+
+
+
+
+
+/*
+ * Reads a number of bytes from input buffer.
+ *
+ * Returns true if all bytes were actually read, false otherwise
+ */
+inline bool _iread(byte *out, byte size)
 {
-    if (ibuf_state & IOBUF_NEMPTY) /* not empty */
+    if (size > ibuf_size) return false;
+    for (byte i = 0; i < size; i++)
     {
-        byte h = ibuf_head;
-        out = ibuf[h++]; /* read byte */
-        if (h == IBUF_SIZE) h = 0;
-        if (h == ibuf_tail)
-        {
-            ibuf_state &= ~IOBUF_NEMPTY /* mark empty */;
-        }
-        ibuf_state |= IOBUF_NFULL /* mark not full */;
-        ibuf_head = h;
-        return true;
+       out[i] = ibuf[ibuf_head++];
+       if (ibuf_head == IBUF_SIZE) ibuf_head = 0;
     }
-    return false;
+    ibuf_size -= size;
+    return true;
 }
 
-/* Accessed in the interruption code */
+
+
+
+
+/* Accessed from the interrupt */
 /*
  * Writes the byte to input buffer.
+ *
+ * Executes `on_success` on success, `on_failure` on failure.
  */
-#define _iwrite(in) \
-    if (ibuf_state & IOBUF_NFULL) /* not full */ \
+#define _iwrite(in, on_success, on_failure) \
+    if (ibuf_size != IBUF_SIZE) /* not full */ \
     { \
-        byte t = ibuf_tail; \
-        ibuf[t++] = in; /* write byte */ \
-        if (t == IBUF_SIZE) t = 0; \
-        if (t == ibuf_head) ibuf_state &= ~IOBUF_NFULL /* make full */; \
-        ibuf_state |= IOBUF_NEMPTY /* mark not empty */; \
-        ibuf_tail = t; \
+        ibuf[ibuf_tail++] = in; /* write byte */ \
+        ++ibuf_size; \
+        if (ibuf_tail == IBUF_SIZE) ibuf_tail = 0; \
+        on_success \
+    } \
+    else \
+    { \
+        on_failure \
     }
 
-/* Accessed in the interruption code */
+
+
+
+
+/* Accessed from the interrupt */
 /*
  * Reads a byte from output buffer.
  *
- * Keeps further USART interrupts disabled on failure.
+ * Executes `on_success` on success, `on_failure` on failure.
  */
-#define _oread(out) \
-    if (obuf_state & IOBUF_NEMPTY) /* not empty */ \
+#define _oread(out, on_success, on_failure) \
+    if (obuf_size != 0) /* not empty */ \
     { \
-        byte h = obuf_head; \
-        out = obuf[h++]; /* read byte */ \
-        if (h == OBUF_SIZE) h = 0; \
-        if (h == obuf_tail) obuf_state &= ~IOBUF_NEMPTY; /* mark empty */ \
-        obuf_state |= IOBUF_NFULL; /* mark not full */ \
-        obuf_head = h; \
-        UCSRB |= (1 << UDRIE); /* Enable Data Reg. Empty interrupt */ \
+        out = obuf[obuf_head++]; /* read byte */ \
+        --obuf_size; \
+        if (obuf_head == OBUF_SIZE) obuf_head = 0; \
+        on_success \
+    } \
+    else \
+    { \
+        on_failure \
     }
 
 
-/* Accessed by the user code; USART interrupts must be disabled manually */
+
+
+
 /*
  * Writes the byte to output buffer.
  *
  * Returns true if byte was actually written, false otherwise
  */
-inline bool owrite(const byte &in)
+inline bool _owrite(const byte *in, byte size)
 {
-    if (obuf_state & IOBUF_NFULL) /* not full */
+    if (size > OBUF_SIZE - obuf_size) return false;
+    for (byte i = 0; i < size; i++)
     {
-        byte t = obuf_tail;
-        obuf[t++] = in; /* write byte */
-        if (t == OBUF_SIZE) t = 0;
-        if (t == obuf_head) obuf_state &= ~IOBUF_NFULL /* make full */;
-        obuf_state |= IOBUF_NEMPTY; /* mark not empty */
-        obuf_tail = t;
-        return true;
+        obuf[obuf_tail++] = in[i];
+        if (obuf_tail == OBUF_SIZE) obuf_tail = 0;
     }
-    return false;
+    obuf_size += size;
+    return true;
 }
+
+
+
+
 
 inline byte isize()
 {
     NO_RX_COMPLETE(
-        byte result = 0;
-        if (ibuf_state & IOBUF_NEMPTY) /* not empty */
-        {
-            /* Warnings are unreasonable for this block since
-               interrupts are disabled and no concurrent
-               access of variables occur. */
-            if (ibuf_head < ibuf_tail)
-            {
-                result = (ibuf_tail - ibuf_head);
-            }
-            else
-            {
-                result = IBUF_SIZE - (ibuf_head - ibuf_tail);
-            }
-        }
+        byte result = ibuf_size;
     )
     return result;
 }
 
-inline bool transmit(const byte &in)
-{
-    NO_DATA_REG_EMPTY(
-        bool result = owrite(in);
-    );
-    return result;
-}
 
-inline bool receive(byte &out)
-{
-    NO_RX_COMPLETE(
-        bool result = iread(out);
-    );
-    return result;
-}
+
+
 
 #pragma vector=USART_RXC_vect
 __interrupt void usart_rxc_interrupt_handler()
@@ -167,8 +166,8 @@ __interrupt void usart_rxc_interrupt_handler()
         
         /* Must read the data anyway
            in order to suppress unnecessary interrupts */
-        byte udr = UDR; /* Reads from UDR */
-        _iwrite(udr); /* Reads from udr */
+        byte udr = UDR;
+        _iwrite(udr, , ); /* Push data to the input buffer */
     )
 }
 
@@ -179,11 +178,63 @@ __interrupt void usart_udre_interrupt_handler()
        be cleared if output buffer become empty
        in order to suppress unnecessary series of interrupts */
     UCSRB &= ~(1 << UDRIE); /* Disable Data Reg. Empty interrupt */
+    
     /* Allow nested interrupts */
     __enable_interrupt();
     
-    _oread(UDR); /* Writes to UDR */
+    /* Pop data from the output buffer to UDR */
+    _oread(
+        UDR,
+        UCSRB |= (1 << UDRIE); /* Enable Data Reg. Empty interrupt on success */,
+        /* do nothing on failure */
+    );
 }
+
+
+
+
+// ========================================================================
+// ===================== User API =========================================
+// ========================================================================
+
+
+
+
+inline bool transmit(const byte &in)
+{
+    NO_DATA_REG_EMPTY(
+        bool result = _owrite(&in, 1);
+    );
+    return result;
+}
+
+inline bool transmit(const byte *in, byte size)
+{
+    NO_DATA_REG_EMPTY(
+        bool result = _owrite(in, size);
+    );
+    return result;
+}
+
+inline bool receive(byte &out)
+{
+    NO_RX_COMPLETE(
+        bool result = _iread(&out, 1);
+    );
+    return result;
+}
+
+inline bool receive(byte *out, byte size)
+{
+    NO_RX_COMPLETE(
+        bool result = _iread(out, size);
+    );
+    return result;
+}
+
+
+
+
 
 /* Disable interrupts (see ATmega8A datasheet) */
 inline __monitor void usart_init()
