@@ -124,7 +124,7 @@ int   err = 0;        /* current error                       */
  *     METHOD=`SET`  => VARIABLE [DATA],
  *     METHOD=`GET`  => VARIABLE,
  *     METHOD=`ECHO` => BYTE,
- *     METHOD=any    => any
+ *     METHOD=BYTE   => any
  * }
  * VARIABLE = BYTE
  * DATA = any
