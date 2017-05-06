@@ -81,7 +81,7 @@ namespace
         {
             y = (int) ((1 << i) * desired);
             x = ((double) y) / (1 << i);
-            if ((abs(x - desired) < abs(x0 - desired)) && (y < 65535))
+            if ((abs(x - desired) < abs(x0 - desired)) && (y < 32768))
             {
                 x0 = x;
                 y0 = y;
