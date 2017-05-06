@@ -81,19 +81,34 @@ inline __monitor void init()
 
 
 
+/*
+ * #40 <bug> <enchancement>
+ *
+ *     Modify coefficient format.
+ *
+ * Let C = one of { KP KI KS }.
+ *
+ *     C * x = (M * x) >> d
+ *
+ * Since ATMega8 does not support floating point operations,
+ * and just (x << d) or (x >> d) cannot provide precise regulation.
+ */
 
 
-sbyte kp = 1,         /* proportional factor                 */
-      ki = -7,        /* memory factor                       */
-      ks = 8          /* scale factor                        */
-      ;
+unsigned int kp_m = 0; byte kp_d = 0;   /* proportional factor */
+unsigned int ki_m = 0; byte ki_d = 0;   /* integral factor     */
+unsigned int ks_m = 0; byte ks_d = 0;   /* scale factor        */
 
-bool  pause  = false; /* paused state                        */
-bool  sync   = false; /* USART async/sync transmit operation */
+#define COEF(c, x) (((long) x) * (c##_m)) >> (c##_d)
 
-byte  adc1, adc2;     /* ADC 1st and 2nd channel             */
+bool  pause  = false; /* paused state                          */
+bool  sync   = false; /* USART async/sync transmit operation   */
 
-int   err = 0;        /* current error                       */
+byte  adc1, adc2;     /* ADC 1st and 2nd channel               */
+
+int   int_err = 0;    /* integral error                        */
+int   cur_err = 0;    /* current error                         */
+int   pwm     = 0;    /* PWM                                   */
 
 
 
@@ -139,6 +154,17 @@ bool command_present = false;
 byte command_variable;
 bool command_variable_present = false;
 
+/*
+ * #47 <enchancement>
+ *
+ *     Add `COEFS` variable and `PACKET` output format
+ *     to support controller-gui tool.
+ *
+ * Data packet GET format is:
+ *     <0 ADC1 ADC2 CUR_ERR INT_ERR PWM OCR2>
+ * Coefficient packet SET format is:
+ *     <KP KI KS>
+ */
 
 #define METHOD_GET     (byte) 0
 #define METHOD_SET     (byte) 1
@@ -150,6 +176,7 @@ bool command_variable_present = false;
 #define VAR_KP         (byte) 2
 #define VAR_KI         (byte) 3
 #define VAR_KS         (byte) 4
+#define VAR_COEFS      (byte) 5
 
 // GET
 #define NO_OUTPUT      (byte) 0
@@ -159,6 +186,7 @@ bool command_variable_present = false;
 #define VAR_CUR_ERR    (byte) 4
 #define VAR_PWM        (byte) 5
 #define VAR_OCR2       (byte) 6
+#define VAR_PACKET     (byte) 7
 
 
 byte output_mode = NO_OUTPUT;
@@ -205,6 +233,21 @@ void send_int(unsigned int data)
 }
 
 
+void send_packet(/* byte adc1, byte adc2, int cur_err, int int_err, int pwm, byte OCR2 */)
+{
+    byte packet[10] = {
+       0,
+       adc1,
+       adc2,
+       ((unsigned int) cur_err) >> 8, cur_err & 0xff,
+       ((unsigned int) int_err) >> 8, int_err & 0xff,
+       ((unsigned int) pwm) >> 8,     pwm     & 0xff,
+       OCR2
+    };
+    send_all(packet, 10);
+}
+
+
 
 
 
@@ -218,24 +261,40 @@ void send_int(unsigned int data)
 
 bool process_set_variable()
 {
-    byte value;
-    if (!receive(&value)) return false; // wait for the value
+    byte packet[9];
     switch(command_variable)
     {
     case VAR_PAUSE:
-        pause = value;
+        if (!receive(&packet[0])) return false; // wait for the value
+        pause = packet[0];
         break;
     case VAR_SYNC_USART:
-        sync = value;
+        if (!receive(packet)) return false; // wait for the value
+        sync = packet[0];
         break;
     case VAR_KP:
-        kp = (sbyte) value;
+        if (!receive_all(packet, 3)) return false; // wait for the value
+        kp_m = (((unsigned int) packet[0]) << 8) | (packet[1]);
+        kp_d = packet[2];
         break;
     case VAR_KI:
-        ki = (sbyte) value;
+        if (!receive_all(packet, 3)) return false; // wait for the value
+        ki_m = (((unsigned int) packet[0]) << 8) | (packet[1]);
+        ki_d = packet[2];
         break;
     case VAR_KS:
-        ks = (sbyte) value;
+        if (!receive_all(packet, 3)) return false; // wait for the value
+        ks_m = (((unsigned int) packet[0]) << 8) | (packet[1]);
+        ks_d = packet[2];
+        break;
+    case VAR_COEFS:
+        if (!receive_all(packet, 9)) return false; // wait for the value
+        kp_m = (((unsigned int) packet[0]) << 8) | (packet[1]);
+        kp_d = packet[2];
+        ki_m = (((unsigned int) packet[3]) << 8) | (packet[4]);
+        ki_d = packet[5];
+        ks_m = (((unsigned int) packet[6]) << 8) | (packet[7]);
+        ks_d = packet[8];
         break;
     }
     return true;
@@ -300,22 +359,17 @@ void do_computations()
     /* Calculate PWM width */
     
     /*
-     * pwmw = KP * e + KI * err, where KP = 2^kp, KI = 2^ki
+     * pwm = KP * e + KI * err
      */
     
-    int e = ((int)(adc2) - (int)(adc1));
-    int pwmw = ABS(err);
-    if (ulog2(pwmw) + ki <= 15) // signed 16bit int = sign bit + 15bit
-    {
-        pwmw = (ki < 0 ? (err >> (-ki)) : (err << ki));
-        pwmw = safe_add(pwmw, (kp < 0 ? (e >> (-kp)) : (e << kp)));
-    }
-    else
-    {
-        pwmw = (err < 0 ? INT_MIN : INT_MAX);
-    }
+    cur_err = ((int)(adc2) - (int)(adc1));
     
-    err = safe_add(err, e);
+    long p = COEF(kp, cur_err), q = COEF(ki, int_err);
+    if (ABS(p) > INT_MAX) p = ((p < 0) ? (INT_MIN) : (INT_MAX));
+    if (ABS(q) > INT_MAX) q = ((q < 0) ? (INT_MIN) : (INT_MAX));
+    pwm = safe_add((int) p, (int) q);
+    
+    int_err = safe_add(int_err, cur_err);
     
     /* Setup PWM width */
     
@@ -325,11 +379,10 @@ void do_computations()
      * by 2^ks.
      */
     
-    OCR2 = (
-               pwmw < 0 ?
-               INT_MAX + pwmw :
-               (unsigned int) (pwmw) + INT_MAX
-           ) >> ks;
+    long t = COEF(ks, pwm) + INT_MAX;
+    if (ABS(t) > INT_MAX) t = ((p < 0) ? (INT_MIN) : (INT_MAX));
+    
+    OCR2 = (((unsigned int) t) + INT_MAX) >> 8;
 
     /* Report back */
     
@@ -344,16 +397,19 @@ void do_computations()
         send_byte(adc2);
         break;
     case VAR_INT_ERR:
-        send_int(err);
+        send_int(int_err);
         break;
     case VAR_CUR_ERR:
-        send_int(e);
+        send_int(cur_err);
         break;
     case VAR_PWM:
-        send_int(pwmw);
+        send_int(pwm);
         break;
     case VAR_OCR2:
         send_byte(OCR2);
+        break;
+    case VAR_PACKET:
+        send_packet();
         break;
     }
 }
