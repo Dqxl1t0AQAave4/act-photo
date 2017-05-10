@@ -26,12 +26,13 @@ using namespace common;
 #define LOCK() std::lock_guard<decltype(guard)> lock(guard);
 #define LOG(text) RequestLog(_T(text));
 #define ERR(handle, text) CloseHandle(handle); handle = INVALID_HANDLE_VALUE; LOG(text);
-#define PLOT(ctrl, p)\
+#define PLOT(ctrl, p, world)\
     ctrl.plot_layer.with(\
         (plot::plot_builder() << p)\
         .with_ticks(plot::palette::pen(RGB(150, 150, 0)))\
-        .with_x_ticks(0, 10, 0)\
-        .with_y_ticks(0, 5, 0)\
+        .with_x_ticks(0, 3, 0)\
+        .with_y_ticks(0, 10, 0)\
+        .in_world(world)\
         .build()\
     );
 
@@ -51,20 +52,20 @@ namespace
     enum draw_what { DRAW_NO, DRAW_ADC1, DRAW_ADC2, DRAW_CURR_ERR, DRAW_INT_ERR, DRAW_PWM, DRAW_OCR2 };
 
     std::list<packet> packets;
-    sampled_t adc1_sampled = allocate_sampled(1000, 0.5);
-    sampled_t adc2_sampled = allocate_sampled(1000, 0.5);
-    sampled_t cur_err_sampled = allocate_sampled(1000, 0.5);
-    sampled_t int_err_sampled = allocate_sampled(1000, 0.5);
-    sampled_t pwm_sampled = allocate_sampled(1000, 0.5);
-    sampled_t ocr2_sampled = allocate_sampled(1000, 0.5);
+    sampled_t adc1_sampled = allocate_sampled(1000, 1);
+    sampled_t adc2_sampled = allocate_sampled(1000, 1);
+    sampled_t cur_err_sampled = allocate_sampled(1000, 1);
+    sampled_t int_err_sampled = allocate_sampled(1000, 1);
+    sampled_t pwm_sampled = allocate_sampled(1000, 1);
+    sampled_t ocr2_sampled = allocate_sampled(1000, 1);
 
     simple_list_plot
-        adc1_plot    = simple_list_plot::curve(0, 1),
-        adc2_plot    = simple_list_plot::curve(0, 1),
-        cur_err_plot = simple_list_plot::curve(0, 1),
-        int_err_plot = simple_list_plot::curve(0, 1),
-        pwm_plot     = simple_list_plot::curve(0, 1),
-        ocr2_plot    = simple_list_plot::curve(0, 1)
+        adc1_plot    = simple_list_plot::curve(0, 2),
+        adc2_plot    = simple_list_plot::curve(0, 2),
+        cur_err_plot = simple_list_plot::curve(0, 2),
+        int_err_plot = simple_list_plot::curve(0, 2),
+        pwm_plot     = simple_list_plot::curve(0, 2),
+        ocr2_plot    = simple_list_plot::curve(0, 2)
     ;
     bool working = false;
     bool stopping = false;
@@ -105,12 +106,12 @@ CControllerGUIDlg::CControllerGUIDlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
-    PLOT(m_adc1_plot_ctrl, adc1_plot);
-    PLOT(m_adc2_plot_ctrl, adc2_plot);
-    PLOT(m_cur_err_plot_ctrl, cur_err_plot);
-    PLOT(m_int_err_plot_ctrl, int_err_plot);
-    PLOT(m_pwm_plot_ctrl, pwm_plot);
-    PLOT(m_ocr2_plot_ctrl, ocr2_plot);
+    PLOT(m_adc1_plot_ctrl, adc1_plot, world_t(0, 1000, -20, 280));
+    PLOT(m_adc2_plot_ctrl, adc2_plot, world_t(0, 1000, -20, 280));
+    PLOT(m_cur_err_plot_ctrl, cur_err_plot, world_t(0, 1000, -35000, 35000));
+    PLOT(m_int_err_plot_ctrl, int_err_plot, world_t(0, 1000, -35000, 35000));
+    PLOT(m_pwm_plot_ctrl, pwm_plot, world_t(0, 1000, -35000, 35000));
+    PLOT(m_ocr2_plot_ctrl, ocr2_plot, world_t(0, 1000, -20, 280));
 }
 
 void CControllerGUIDlg::DoDataExchange(CDataExchange* pDX)
@@ -603,12 +604,12 @@ void CControllerGUIDlg::OnTimer(UINT_PTR nIDEvent)
         guard.unlock();
     }
 
-    setup(adc1_plot, adc1_sampled, size);
-    setup(adc2_plot, adc2_sampled, size);
-    setup(cur_err_plot, cur_err_sampled, size);
-    setup(int_err_plot, int_err_sampled, size);
-    setup(pwm_plot, pwm_sampled, size);
-    setup(ocr2_plot, ocr2_sampled, size);
+    setup(adc1_plot, adc1_sampled, size, 0, identity_un_op(), false);
+    setup(adc2_plot, adc2_sampled, size, 0, identity_un_op(), false);
+    setup(cur_err_plot, cur_err_sampled, size, 0, identity_un_op(), false);
+    setup(int_err_plot, int_err_sampled, size, 0, identity_un_op(), false);
+    setup(pwm_plot, pwm_sampled, size, 0, identity_un_op(), false);
+    setup(ocr2_plot, ocr2_sampled, size, 0, identity_un_op(), false);
     m_adc1_plot_ctrl.RedrawWindow();
     m_adc2_plot_ctrl.RedrawWindow();
     m_cur_err_plot_ctrl.RedrawWindow();
