@@ -40,9 +40,8 @@ public:
     double m_desiredKi;
     double m_desiredKs;
     LRESULT OnUpdateDataMessage(WPARAM wpD, LPARAM lpD);
-    LRESULT OnLogMessage(WPARAM wpD, LPARAM lpD);
     void RequestUpdateData(BOOL saveAndValidate);
-    void RequestLog(LPCTSTR text);
+    void RequestLog(CString text);
     PlotStatic m_adc1_plot_ctrl;
     PlotStatic m_adc2_plot_ctrl;
     PlotStatic m_cur_err_plot_ctrl;
@@ -50,7 +49,6 @@ public:
     PlotStatic m_pwm_plot_ctrl;
     PlotStatic m_ocr2_plot_ctrl;
     CString m_log;
-    void DoReading();
     afx_msg void OnBnClickedButton10();
     afx_msg void OnTimer(UINT_PTR nIDEvent);
     afx_msg void OnBnClickedOk();
