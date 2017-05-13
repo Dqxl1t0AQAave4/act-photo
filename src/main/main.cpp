@@ -228,15 +228,23 @@ void send_byte(byte data)
 
 void send_int(unsigned int data)
 {
-    byte lo_hi[2] = { (byte) (data & 0xff), (byte) (data >> 8) };
-    send_all(lo_hi, 2);
+    byte hi_lo[2] = { (byte) (data >> 8), (byte) (data & 0xff) };
+    send_all(hi_lo, 2);
 }
 
 
 void send_packet(/* byte adc1, byte adc2, int cur_err, int int_err, int pwm, byte OCR2 */)
 {
-    byte packet[10] = {
-       0,
+    /*
+     * #53 <enchancement>
+     *     Review the packet format.
+     *     
+     * The new packet format is < delimiter | data | checksum >,
+     * where checksum is calculated as delimiter ^ adc1 ^ (cerr & 0xff) ^ ocr2.
+     */
+    
+    byte packet[11] = {
+       103,
        adc1,
        adc2,
        ((unsigned int) cur_err) >> 8, cur_err & 0xff,
@@ -244,7 +252,8 @@ void send_packet(/* byte adc1, byte adc2, int cur_err, int int_err, int pwm, byt
        ((unsigned int) pwm) >> 8,     pwm     & 0xff,
        OCR2
     };
-    send_all(packet, 10);
+    packet[10] = packet[0] ^ packet[1] ^ packet[4] ^ packet[9];
+    send_all(packet, 11);
 }
 
 
@@ -372,12 +381,6 @@ void do_computations()
     int_err = safe_add(int_err, cur_err);
     
     /* Setup PWM width */
-    
-    /*
-     * Must transform pwmw from signed int to unsigned byte.
-     * Add INT_MAX to get rid of negative values and divide
-     * by 2^ks.
-     */
     
     long t = COEF(ks, pwm) + INT_MAX;
     if (ABS(t) > INT_MAX) t = ((p < 0) ? (INT_MIN) : (INT_MAX));
