@@ -11,9 +11,9 @@ namespace act_photo
     const std::uint8_t var_packet = 7;
     const std::uint8_t var_coefs  = 5;
 
-    const std::uint8_t packet_size      = 10;
+    const std::uint8_t packet_size      = 11;
     const std::uint8_t packet_body_size = 9;
-    const std::uint8_t packet_delimiter = 0;
+    const std::uint8_t packet_delimiter = 103; /* #53 */
 
     using packet_t = struct
     {
@@ -53,6 +53,18 @@ namespace act_photo
             (std::int16_t) ((((std::uint8_t) input[6]) << 8) | ((std::uint8_t) input[7])),
             (std::uint8_t) ((std::uint8_t) input[8])
         };
+    }
+    
+    /*
+     * #53 <enchancement>
+     *     Review the packet format.
+     *     
+     * The new packet format is < delimiter | data | checksum >,
+     * where checksum is calculated as delimiter ^ adc1 ^ (cerr & 0xff) ^ ocr2.
+     */
+    inline char read_checksum(char * input /* with headings */)
+    {
+        return input[0] ^ input[1] ^ input[4] ^ input[9];
     }
 
     inline void serialize(const command_t &command, char * output)

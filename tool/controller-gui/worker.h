@@ -627,8 +627,16 @@ private:
             }
             if (c == act_photo::packet_delimiter)
             {
-                detected = true;
-                break;
+                if ((buffer.remaining() >= act_photo::packet_size - 1))
+                {
+                    char checksum = buffer.data()[act_photo::packet_size - 2];
+                    char s = act_photo::read_checksum(buffer.data() - 1); // the buffer position is at least 1
+                    if (checksum == s)
+                    {
+                        detected = true;
+                        break;
+                    }
+                }
             }
         }
         if (buffer.remaining() < act_photo::packet_size - 1)

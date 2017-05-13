@@ -88,23 +88,32 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     /*
+     * #53 <enchancement>
+     *     Review the packet format.
+     *     
+     * The new packet format is < delimiter | data | checksum >,
+     * where checksum is calculated as delimiter ^ adc1 ^ (cerr & 0xff) ^ ocr2.
+     * 
+     * So...
+     *
      * Use packet format:
-     *     packet: < 0 adc1 adc2 cerr interr pwm ocr2 >
-     *     bytes:  < 1    1    1    2      2   2    1 >   =>   10 bytes
+     *     packet: < 103 adc1 adc2 cerr interr pwm ocr2 checksum >
+     *     bytes:  < 1      1    1    2      2   2    1        X >   =>   11 bytes
      */
 
     double t = 0; unsigned short int s;
     while (true)
     {
-        char packet[10] = { 0 };
+        char packet[11] = { 103 };
         s = SIN_BYTE(t);       packet[1] = s; // adc1
         s = SIN_BYTE(-t);      packet[2] = s; // adc2
         s = SIN_SSHORT(t);     packet[3] = (s >> 8); packet[4] = (s & 0xff); // cerr
         s = SIN_SSHORT(-t);    packet[5] = (s >> 8); packet[6] = (s & 0xff); // interr
         s = SIN_SSHORT(2 * t); packet[7] = (s >> 8); packet[8] = (s & 0xff); // pwm
         s = SIN_BYTE(2 * t);   packet[9] = s; // ocr2
+        packet[10] = packet[0] ^ packet[1] ^ packet[4] ^ packet[9];
         DWORD written;
-        if (!WriteFile(m_Handle, packet, 10, &written, 0) || written != 10)
+        if (!WriteFile(m_Handle, packet, 11, &written, 0) || written != 11)
         {
             CloseHandle(m_Handle);
             std::cerr << "Cannot send data.";
