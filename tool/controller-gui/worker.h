@@ -11,6 +11,7 @@
 #include <thread>
 #include <condition_variable>
 #include <exception>
+#include <cassert>
 
 #include "logger.h"
 #include "act-photo.h"
