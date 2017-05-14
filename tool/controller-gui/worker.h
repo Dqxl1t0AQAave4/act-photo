@@ -432,10 +432,13 @@ public:
 class worker
 {
 
+public:
+
+    using mutex_t = std::mutex;
+    using guard_t = std::lock_guard < mutex_t > ;
+
 private:
 
-    using mutex_t     = std::mutex;
-    using guard_t     = std::lock_guard < mutex_t > ;
     using ulock_t     = std::unique_lock < mutex_t > ;
     using condition_t = std::condition_variable;
 
@@ -448,23 +451,27 @@ private:
     bool                              working;
     com_port                          port;
     bool                              port_changed;
+    std::size_t                       buffer_size;
     std::vector<act_photo::command_t> commands;
 
     // thread-local
     com_port                          current_port;
     byte_buffer                       buffer;
-    std::size_t                       queue_length;
 
 public:
 
     mutex_t                           queue_mutex;
-    std::list<act_photo::packet_t>    packet_queue; // guarded by `queue_mutex`
+
+    // guarded by `queue_mutex`
+    std::size_t                       queue_length;
+    std::list<act_photo::packet_t>    packet_queue;
 
 public:
 
     worker(std::size_t buffer_size = 5000,
            std::size_t queue_length = 1000)
            : buffer(buffer_size)
+           , buffer_size(buffer_size)
            , queue_length(queue_length)
     {
         worker_thread = std::thread(&worker::start, this);
@@ -490,6 +497,22 @@ public:
         {
             guard_t guard(mutex);
             commands.push_back(command);
+        }
+    }
+
+    void supply_buffer_size(std::size_t buffer_size)
+    {
+        {
+            guard_t guard(mutex);
+            this->buffer_size = buffer_size;
+        }
+    }
+
+    void supply_queue_length(std::size_t queue_length)
+    {
+        {
+            guard_t guard(queue_mutex);
+            this->queue_length = queue_length;
         }
     }
 
@@ -568,6 +591,10 @@ private:
 
         for (;;)
         {
+            {
+                guard_t guard(mutex);
+                buffer.capacity(buffer_size);
+            }
             if (!fetch_port().read(buffer))
             {
                 continue;

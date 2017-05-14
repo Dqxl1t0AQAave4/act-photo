@@ -43,7 +43,7 @@ using namespace common;
 namespace
 {
 
-    const std::size_t point_count = 500;
+    std::size_t point_count = 500;
 
     std::list<act_photo::packet_t> packets;
 
@@ -67,24 +67,25 @@ namespace
     std::mutex log_mutex;
 
     worker     _worker;
+
+    world_t byte_world = world_t(0, point_count, -20, 280);
+    world_t short_world = world_t(0, point_count, -35000, 35000);
 }
 
 CControllerGUIDlg::CControllerGUIDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CControllerGUIDlg::IDD, pParent)
-    , m_comName(_T("COM2"))
-    , m_desiredKp(0)
-    , m_desiredKi(0)
-    , m_desiredKs(0)
     , m_log(_T(""))
+    , m_textual(_T(""))
+    , manager(this, _worker, point_count)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
-    PLOT(m_adc1_plot_ctrl, adc1_plot, world_t(0, point_count, -20, 280));
-    PLOT(m_adc2_plot_ctrl, adc2_plot, world_t(0, point_count, -20, 280));
-    PLOT(m_cur_err_plot_ctrl, cur_err_plot, world_t(0, point_count, -35000, 35000));
-    PLOT(m_int_err_plot_ctrl, int_err_plot, world_t(0, point_count, -35000, 35000));
-    PLOT(m_pwm_plot_ctrl, pwm_plot, world_t(0, point_count, -35000, 35000));
-    PLOT(m_ocr2_plot_ctrl, ocr2_plot, world_t(0, point_count, -20, 280));
+    PLOT(m_adc1_plot_ctrl, adc1_plot, &byte_world);
+    PLOT(m_adc2_plot_ctrl, adc2_plot, &byte_world);
+    PLOT(m_cur_err_plot_ctrl, cur_err_plot, &short_world);
+    PLOT(m_int_err_plot_ctrl, int_err_plot, &short_world);
+    PLOT(m_pwm_plot_ctrl, pwm_plot, &short_world);
+    PLOT(m_ocr2_plot_ctrl, ocr2_plot, &byte_world);
 
     logger::set([this] (CString s) {
         RequestLog(s);
@@ -94,30 +95,24 @@ CControllerGUIDlg::CControllerGUIDlg(CWnd* pParent /*=NULL*/)
 void CControllerGUIDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialogEx::DoDataExchange(pDX);
-    DDX_Text(pDX, IDC_EDIT1, m_comName);
-    DDX_Text(pDX, IDC_EDIT3, m_desiredKp);
-    DDX_Text(pDX, IDC_EDIT5, m_desiredKi);
-    DDX_Text(pDX, IDC_EDIT7, m_desiredKs);
     DDX_Control(pDX, IDC_PLOT, m_adc1_plot_ctrl);
     DDX_Control(pDX, IDC_PLOT2, m_adc2_plot_ctrl);
     DDX_Control(pDX, IDC_PLOT4, m_cur_err_plot_ctrl);
     DDX_Control(pDX, IDC_PLOT3, m_int_err_plot_ctrl);
     DDX_Control(pDX, IDC_PLOT5, m_pwm_plot_ctrl);
     DDX_Control(pDX, IDC_PLOT6, m_ocr2_plot_ctrl);
-    DDX_Text(pDX, IDC_EDIT2, m_log);
     DDX_Control(pDX, IDC_EDIT2, m_logEdit);
+    DDX_Control(pDX, IDC_EDIT3, m_textualEdit);
 }
 
 BEGIN_MESSAGE_MAP(CControllerGUIDlg, CDialogEx)
     ON_MESSAGE(WM_UPDATEDATA_MESSAGE, &CControllerGUIDlg::OnUpdateDataMessage)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-    ON_BN_CLICKED(IDC_BUTTON1, &CControllerGUIDlg::OnBnClickedButton1)
-    ON_BN_CLICKED(IDC_BUTTON2, &CControllerGUIDlg::OnBnClickedButton2)
-    ON_BN_CLICKED(IDC_BUTTON10, &CControllerGUIDlg::OnBnClickedButton10)
     ON_WM_TIMER()
-    ON_BN_CLICKED(IDOK, &CControllerGUIDlg::OnBnClickedOk)
     ON_WM_CLOSE()
+    ON_WM_SHOWWINDOW()
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -132,8 +127,10 @@ BOOL CControllerGUIDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-    UpdateData(TRUE);
     UpdateData(FALSE);
+    UpdateData(TRUE);
+
+    manager.Create(CManagementDlg::IDD, this);
 
     // Just start the timer
     SetTimer(123456, 500, NULL);
@@ -180,45 +177,6 @@ HCURSOR CControllerGUIDlg::OnQueryDragIcon()
 }
 
 
-
-void CControllerGUIDlg::OnBnClickedButton1()
-{
-    UpdateData(TRUE);
-
-    com_port port;
-    if (!port.open(m_comName))
-    {
-        // port must log it
-        return;
-    }
-
-    _worker.supply_port(std::move(port));
-}
-
-
-void CControllerGUIDlg::OnBnClickedButton2()
-{
-    OnBnClickedButton10();
-
-    _worker.supply_command(act_photo::set_coefs_command(act_photo::desired_coefs_t{ m_desiredKp, m_desiredKi, m_desiredKs }));
-}
-
-
-void CControllerGUIDlg::OnBnClickedButton10()
-{
-    UpdateData(TRUE);
-
-    act_photo::desired_coefs_t desired = { m_desiredKp, m_desiredKi, m_desiredKs }, optimal;
-    act_photo::coefs_t coefs = act_photo::calculate_optimal_coefs(desired, optimal);
-
-    logger::log(_T("sending coefs [kp = %.2e, ki = %.2f, ks = %.2f]"), optimal.kp, optimal.ki, optimal.ks);
-    logger::log(_T("kp => [%d, %d, %d], ki => [%d, %d, %d], ks => [%d, %d, %d]"),
-                (coefs.kp_m >> 8) & 0xff, coefs.kp_m & 0xff, coefs.kp_d,
-                (coefs.ki_m >> 8) & 0xff, coefs.ki_m & 0xff, coefs.ki_d,
-                (coefs.ks_m >> 8) & 0xff, coefs.ks_m & 0xff, coefs.ks_d);
-}
-
-
 LRESULT CControllerGUIDlg::OnUpdateDataMessage(WPARAM wpD, LPARAM lpD)
 {
     UpdateData(wpD == TRUE);
@@ -245,7 +203,7 @@ void CControllerGUIDlg::RequestLog(CString text)
 void CControllerGUIDlg::OnTimer(UINT_PTR nIDEvent)
 {
     {
-        std::lock_guard<decltype(_worker.queue_mutex)> guard(_worker.queue_mutex);
+        worker::guard_t guard(_worker.queue_mutex);
         packets.insert(packets.end(), _worker.packet_queue.begin(), _worker.packet_queue.end());
         _worker.packet_queue.clear();
     }
@@ -266,6 +224,8 @@ void CControllerGUIDlg::OnTimer(UINT_PTR nIDEvent)
         ++i;
     }
 
+    byte_world.xmax = point_count;
+    short_world.xmax = point_count;
     std::size_t size = packets.size();
     setup(adc1_plot, adc1_sampled, size, 0, identity_un_op(), false);
     setup(adc2_plot, adc2_sampled, size, 0, identity_un_op(), false);
@@ -288,33 +248,47 @@ void CControllerGUIDlg::OnTimer(UINT_PTR nIDEvent)
     {
         m_logEdit.SetWindowText(m_log);
     }
-}
-
-
-void CControllerGUIDlg::OnBnClickedOk()
-{
-    KillTimer(123456);
-
-    _worker.stop();
-    _worker.join();
-    logger::set([] (CString) {});
-
-    CDialogEx::OnOK();
-}
-
-
-void CControllerGUIDlg::OnClose()
-{
-    KillTimer(123456);
     
-    _worker.stop();
-    _worker.join();
-    logger::set([] (CString) {});
+    CString fmt;
+    CString textual("");
+    for each (auto o in packets)
+    {
+        fmt.Format(_T("%10u %10u %10d %10d %10d %10u\r\n"),
+                   o.adc1, o.adc2, o.cur_err, o.int_err, o.pwm, o.ocr2);
+        textual = fmt + textual;
+    }
+    fmt.Format(_T("%10s %10s %10s %10s %10s %10s\r\n"),
+               _T("adc1"), _T("adc2"), _T("cur_err"), _T("int_err"), _T("PWM"), _T("OCR2"));
+    textual = fmt + textual;
+    if (textual != m_textual)
+    {
+        m_textualEdit.SetWindowText(textual);
+        m_textual = textual;
+    }
+}
 
-    CDialogEx::OnClose();
+void CControllerGUIDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+    CDialogEx::OnShowWindow(bShow, nStatus);
+
+    CRect rect;
+    manager.GetWindowRect(rect);
+    int dx = rect.Width();
+    int dy = rect.Height();
+    GetWindowRect(rect);
+    manager.SetWindowPos(&CWnd::wndNoTopMost, rect.right - dx - 10, rect.bottom - dy - 10, dx, dy, SWP_SHOWWINDOW);
+    manager.ShowWindow(SW_SHOW);
+    manager.UpdateWindow();
 }
 
 
-void CControllerGUIDlg::CloseConnection()
+void CControllerGUIDlg::OnDestroy()
 {
+    CDialogEx::OnDestroy();
+
+    KillTimer(123456);
+
+    _worker.stop();
+    _worker.join();
+    logger::set([] (CString) {});
 }

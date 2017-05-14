@@ -106,6 +106,7 @@
     <ClInclude Include="controller-gui.h" />
     <ClInclude Include="controller-guiDlg.h" />
     <ClInclude Include="logger.h" />
+    <ClInclude Include="ManagementDlg.h" />
     <ClInclude Include="plot.h" />
     <ClInclude Include="PlotStatic.h" />
     <ClInclude Include="Resource.h" />
@@ -117,6 +118,7 @@
     <ClCompile Include="controller-gui.cpp" />
     <ClCompile Include="controller-guiDlg.cpp" />
     <ClCompile Include="logger.cpp" />
+    <ClCompile Include="ManagementDlg.cpp" />
     <ClCompile Include="PlotStatic.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

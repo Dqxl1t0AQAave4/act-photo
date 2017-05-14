@@ -8,6 +8,8 @@
 #include "PlotStatic.h"
 #include "afxwin.h"
 
+#include "ManagementDlg.h"
+
 
 // CControllerGUIDlg dialog
 class CControllerGUIDlg : public CDialogEx
@@ -33,12 +35,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-    CString m_comName;
-    afx_msg void OnBnClickedButton1();
-    afx_msg void OnBnClickedButton2();
-    double m_desiredKp;
-    double m_desiredKi;
-    double m_desiredKs;
+    CManagementDlg manager;
     LRESULT OnUpdateDataMessage(WPARAM wpD, LPARAM lpD);
     void RequestUpdateData(BOOL saveAndValidate);
     void RequestLog(CString text);
@@ -49,10 +46,10 @@ public:
     PlotStatic m_pwm_plot_ctrl;
     PlotStatic m_ocr2_plot_ctrl;
     CString m_log;
-    afx_msg void OnBnClickedButton10();
+    CString m_textual;
     afx_msg void OnTimer(UINT_PTR nIDEvent);
-    afx_msg void OnBnClickedOk();
-    afx_msg void OnClose();
-    void CloseConnection();
     CEdit m_logEdit;
+    CEdit m_textualEdit;
+    afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+    afx_msg void OnDestroy();
 };
