@@ -610,6 +610,8 @@ private:
                 while (fetch_port().write(buffer) && buffer.remaining())
                     ;
 
+                buffer.reset();
+
                 command_buffer.pop_front();
             }
         }
