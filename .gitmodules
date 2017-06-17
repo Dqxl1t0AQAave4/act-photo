@@ -1,0 +1,3 @@
+[submodule "lib/act-common"]
+	path = lib/act-common
+	url = https://github.com/Dqxl1t0AQAave4/act-common

@@ -308,7 +308,7 @@ Pin="PinB",a,9,0,-12,-3
 Name=Arrow
 Definition=Blank
 Shape=Arrow
-Mask=5120
+Mask=5888
 memo=Arrow graphic
 Label Offset=-5,4,9,-12
 PinCnt=0
@@ -414,7 +414,7 @@ ONV=20,4,PART,X1
 Style=8192
 
 [Attr]
-ONV=20,18,FILE,.\ATmega8A.MAC
+ONV=20,18,FILE,..\lib\act-common\schema\ATmega8A.MAC
 
 [Attr]
 ONV=0,0,PACKAGE,
@@ -1498,7 +1498,7 @@ Scale 0=1
 Scale 1=1
 Scale 2=1
 Scale 3=1
-Grid=59,69
+Grid=79,44
 
 [Page]
 Index=1
@@ -1935,10 +1935,10 @@ AliasID=3
 XExp=T
 YExp=v(MEGAIN)
 XRng=1
-YRng=7.5
+YRng=12.5
 Options=LINEARX,LINEARY
 Range Grid X=0.2
-Range Grid Y=1.5
+Range Grid Y=2.5
 Line Color=#008000
 Text Color=#008000
 Rainbow=False

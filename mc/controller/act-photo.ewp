@@ -407,7 +407,7 @@
         </option>
         <option>
           <name>newCCIncludePaths</name>
-          <state>..\include\</state>
+          <state>..\..\lib\act-common\mc\common\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
