@@ -21,7 +21,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -54,6 +54,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\lib\act-common\src\com-port-api\include; ..\..\lib\act-common\src\logger-simple-api\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -79,6 +80,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\lib\act-common\src\com-port-api\include; ..\..\lib\act-common\src\logger-simple-api\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -105,19 +107,16 @@
     <ClInclude Include="common.h" />
     <ClInclude Include="controller-gui.h" />
     <ClInclude Include="controller-guiDlg.h" />
-    <ClInclude Include="logger.h" />
     <ClInclude Include="ManagementDlg.h" />
     <ClInclude Include="plot.h" />
     <ClInclude Include="PlotStatic.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="worker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="controller-gui.cpp" />
     <ClCompile Include="controller-guiDlg.cpp" />
-    <ClCompile Include="logger.cpp" />
     <ClCompile Include="ManagementDlg.cpp" />
     <ClCompile Include="PlotStatic.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -133,6 +132,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\controller-gui.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\act-common\src\com-port-api\com-port-api.vcxproj">
+      <Project>{27b5fc72-5e56-4685-8b49-c885f99507e9}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

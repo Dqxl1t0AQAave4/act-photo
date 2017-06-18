@@ -9,9 +9,9 @@
 
 #include "common.h"
 #include "plot.h"
-#include "logger.h"
+#include <logger.h>
 #include "act-photo.h"
-#include "worker.h"
+#include <worker.h>
 
 #include <list>
 #include <thread>
