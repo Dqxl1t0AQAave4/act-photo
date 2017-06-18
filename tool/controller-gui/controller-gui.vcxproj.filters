@@ -42,12 +42,6 @@
     <ClInclude Include="PlotStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="worker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="logger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="act-photo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -66,9 +60,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PlotStatic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ManagementDlg.cpp">
