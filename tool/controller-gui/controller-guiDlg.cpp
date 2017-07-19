@@ -11,7 +11,7 @@
 #include "plot.h"
 #include <act-common/logger.h>
 #include "act-photo.h"
-#include <worker.h>
+#include <act-common/reactor.h>
 
 #include <list>
 #include <thread>
@@ -135,6 +135,8 @@ BOOL CControllerGUIDlg::OnInitDialog()
     // Just start the timer
     SetTimer(123456, 500, NULL);
 
+    _worker.start();
+
 	// TODO: Add extra initialization here
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -203,9 +205,8 @@ void CControllerGUIDlg::RequestLog(CString text)
 void CControllerGUIDlg::OnTimer(UINT_PTR nIDEvent)
 {
     {
-        worker::guard_t guard(_worker.queue_mutex);
-        packets.insert(packets.end(), _worker.packet_queue.begin(), _worker.packet_queue.end());
-        _worker.packet_queue.clear();
+        worker::guard_t guard(_worker.iqueue_mutex);
+        packets.splice(packets.end(), _worker.iqueue);
     }
     while(packets.size() > point_count)
     {

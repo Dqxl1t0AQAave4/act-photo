@@ -1,10 +1,13 @@
 #pragma once
 #include "afxwin.h"
 
-#include <worker.h>
+#include <act-common/reactor.h>
 #include <act-common/logger.h>
 #include "act-photo.h"
 #include <vector>
+
+using namespace com_port_api;
+using worker = reactor < act_photo::dialect > ;
 
 // CManagementDlg dialog
 

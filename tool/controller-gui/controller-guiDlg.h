@@ -10,6 +10,11 @@
 
 #include "ManagementDlg.h"
 
+#include <act-common/reactor.h>
+
+using namespace com_port_api;
+using worker = reactor < act_photo::dialect > ;
+
 
 // CControllerGUIDlg dialog
 class CControllerGUIDlg : public CDialogEx

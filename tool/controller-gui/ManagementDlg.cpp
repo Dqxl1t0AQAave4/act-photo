@@ -57,7 +57,7 @@ void CManagementDlg::OnBnClickedConnOpen()
     UpdateData(TRUE);
 
     com_port port;
-    if (!port.open(m_comName))
+    if (!port.open(com_port_options(m_comName, CBR_4800, 8, true, ODDPARITY, ONESTOPBIT)))
     {
         // port must log it
         return;
@@ -113,7 +113,7 @@ void CManagementDlg::OnBnClickedCoefsSet()
     }
 
 
-    _worker.supply_command(act_photo::set_coefs_command(coefs));
+    _worker.supply_opacket(act_photo::set_coefs_command(coefs));
 }
 
 
@@ -127,6 +127,6 @@ void CManagementDlg::OnCbnSelchangeCoefsLast()
 void CManagementDlg::OnBnClickedSetIoParams()
 {
     UpdateData(TRUE);
-    _worker.supply_buffer_size(m_bufferCap);
-    _worker.supply_queue_length(m_packetQueueLength);
+    _worker.supply_ibuffer_size(m_bufferCap);
+    _worker.supply_iqueue_length(m_packetQueueLength);
 }
