@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <act-common/dialect.h>
 
 namespace act_photo
 {
@@ -132,4 +133,77 @@ namespace act_photo
     {
         return { method_get, var_packet, command_t::data_t() };
     }
+
+
+    class dialect
+        : public com_port_api::dialect < packet_t, command_t >
+    {
+
+    public:
+
+        bool read(packet_t &dst, com_port_api::byte_buffer &src)
+        {
+            char c;
+
+            for(;;)
+            {
+                if (!src.remaining())
+                {
+                    return false;
+                }
+
+                // don't use `get` to avoid subsequent call to `put`
+                c = src.data()[0];
+
+                if (c == act_photo::packet_delimiter)
+                {
+                    if ((src.remaining() >= act_photo::packet_size))
+                    {
+                        char checksum = src.data()[act_photo::packet_size - 1]; // last byte
+                        char s = act_photo::read_checksum(src.data() /* with headings */);
+                        if (checksum == s)
+                        {
+                            dst = read_packet(src.data() + 1 /* without headings */);
+
+                            // move the buffer position
+                            src.increase_position(act_photo::packet_size);
+
+                            return true;
+                        }
+                        else
+                        {
+                            // try next byte - invalid packet
+                            src.increase_position(1);
+                        }
+                    }
+                    else
+                    {
+                        // insufficient bytes to read the complete packet
+                        return false;
+                    }
+                }
+                else
+                {
+                    // if not delimiter - skip and try next byte
+                    src.increase_position(1);
+                }
+            }
+            return false;
+        }
+
+        bool write(com_port_api::byte_buffer &dst, const command_t &src)
+        {
+            if (dst.remaining() < src.bytes.size() + 2)
+            {
+                // insufficient place in output buffer
+                return false;
+            }
+
+            serialize(src, dst.data());
+
+            dst.increase_position(src.bytes.size() + 2);
+
+            return true;
+        }
+    };
 }
