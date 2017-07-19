@@ -9,7 +9,7 @@
 
 #include "common.h"
 #include "plot.h"
-#include <logger.h>
+#include <act-common/logger.h>
 #include "act-photo.h"
 #include <worker.h>
 

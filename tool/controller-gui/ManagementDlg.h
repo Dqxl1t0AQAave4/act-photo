@@ -2,7 +2,7 @@
 #include "afxwin.h"
 
 #include <worker.h>
-#include <logger.h>
+#include <act-common/logger.h>
 #include "act-photo.h"
 #include <vector>
 
