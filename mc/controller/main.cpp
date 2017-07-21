@@ -201,7 +201,20 @@ byte output_mode = NO_OUTPUT;
 
 
 
+inline byte transmit_all(byte * src, byte length)
+{
+    return iobuf_write < sp_process_full, lp_use_lock > (usart_obuf, src, length);
+}
 
+inline byte receive_all(byte * dst, byte length)
+{
+    return iobuf_read < sp_process_full, lp_use_lock > (dst, usart_ibuf, length);
+}
+
+inline byte receive(byte * dst)
+{
+    return iobuf_read < lp_use_lock > (*dst, usart_ibuf);
+}
 
 
 void send_all(byte *data, byte size)
