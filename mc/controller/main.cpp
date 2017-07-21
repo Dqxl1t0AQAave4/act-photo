@@ -14,15 +14,13 @@
  * FOSC = 1MHz is confugured via Flash Fuses CKSEL=1 and SUT=2.
  */
 
-#define IBUF_SIZE    16
-#define OBUF_SIZE    32
 #define BAUD_RATE    4800    // 4.8kbps
 #define FOSC         1000000 // 1MHz
 #define TC2_PRESCALE 1       // no Timer/Counter2 prescale
 
 
 
-#include <act-common/usart.h>
+#include <act-photo/usart.h>
 #include <act-photo/pwm.h>
 
 
