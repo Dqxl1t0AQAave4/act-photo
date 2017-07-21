@@ -36,6 +36,12 @@ inline __monitor void init()
 }
 
 
+inline byte transmit(byte src)
+{
+    return iobuf_write < lp_use_lock > (usart_obuf, src);
+}
+
+
 /* Program entry point */
 
 
