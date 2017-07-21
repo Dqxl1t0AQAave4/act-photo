@@ -1,13 +1,13 @@
-#include <common.h>
+#define DLIB
 
-#define IBUF_SIZE    16
-#define OBUF_SIZE    32
+#include <act-common/common.h>
+
 #define BAUD_RATE    4800
 #define FOSC         1000000
 #define TC2_PRESCALE 1
 
-#include <usart.h>
-#include <pwm.h>
+#include <act-photo/usart.h>
+#include <act-photo/pwm.h>
 
 inline __monitor void init()
 {
