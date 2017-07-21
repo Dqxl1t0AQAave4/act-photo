@@ -412,6 +412,7 @@
         <option>
           <name>newCCIncludePaths</name>
           <state>..\..\lib\act-common\mc\common\include</state>
+          <state>..\include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
