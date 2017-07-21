@@ -1,3 +1,5 @@
+#define DLIB
+
 #include <act-common/common.h>
 
 
