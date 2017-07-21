@@ -1,4 +1,6 @@
-#include <common.h>
+#define DLIB
+
+#include <act-common/common.h>
 
 
 
@@ -14,16 +16,14 @@
  * FOSC = 1MHz is confugured via Flash Fuses CKSEL=1 and SUT=2.
  */
 
-#define IBUF_SIZE    16
-#define OBUF_SIZE    32
 #define BAUD_RATE    4800    // 4.8kbps
 #define FOSC         1000000 // 1MHz
 #define TC2_PRESCALE 1       // no Timer/Counter2 prescale
 
 
 
-#include <usart.h>
-#include <pwm.h>
+#include <act-photo/usart.h>
+#include <act-photo/pwm.h>
 
 
 
@@ -203,7 +203,20 @@ byte output_mode = NO_OUTPUT;
 
 
 
+inline byte transmit_all(byte * src, byte length)
+{
+    return iobuf_write < sp_process_full, lp_use_lock > (usart_obuf, src, length);
+}
 
+inline byte receive_all(byte * dst, byte length)
+{
+    return iobuf_read < sp_process_full, lp_use_lock > (dst, usart_ibuf, length);
+}
+
+inline byte receive(byte * dst)
+{
+    return iobuf_read < lp_use_lock > (*dst, usart_ibuf);
+}
 
 
 void send_all(byte *data, byte size)
