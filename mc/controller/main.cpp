@@ -23,7 +23,7 @@
 
 
 #include <act-common/usart.h>
-#include <act-common/pwm.h>
+#include <act-photo/pwm.h>
 
 
 
