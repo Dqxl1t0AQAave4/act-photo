@@ -9,9 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "controller-gui", "controlle
 		{27B5FC72-5E56-4685-8B49-C885F99507E9} = {27B5FC72-5E56-4685-8B49-C885F99507E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "com-port-api", "..\..\lib\act-common\src\com-port-api\com-port-api.vcxproj", "{27B5FC72-5E56-4685-8B49-C885F99507E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "com-port-api", "..\..\lib\src\com-port-api\src\com-port-api.vcxproj", "{27B5FC72-5E56-4685-8B49-C885F99507E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger-simple-api", "..\..\lib\act-common\src\logger-simple-api\logger-simple-api.vcxproj", "{F51F8123-3C41-4BDB-A997-939A7DEC5178}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger-simple-api", "..\..\lib\src\logger\logger-simple-api.vcxproj", "{F51F8123-3C41-4BDB-A997-939A7DEC5178}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
