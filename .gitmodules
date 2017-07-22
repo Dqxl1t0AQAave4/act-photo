@@ -1,3 +1,15 @@
 [submodule "lib/act-common"]
 	path = lib/act-common
 	url = https://github.com/Dqxl1t0AQAave4/act-common
+[submodule "lib/src/com-port-api"]
+	path = lib/src/com-port-api
+	url = https://github.com/Dqxl1t0AQAave4/act-common-src-com-port.git
+[submodule "lib/src/logger"]
+	path = lib/src/logger
+	url = https://github.com/Dqxl1t0AQAave4/act-common-src-logger.git
+[submodule "lib/mc/common"]
+	path = lib/mc/common
+	url = https://github.com/Dqxl1t0AQAave4/act-common-mc-common.git
+[submodule "lib/schema/common"]
+	path = lib/schema/common
+	url = https://github.com/Dqxl1t0AQAave4/act-common-schema.git
