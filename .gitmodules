@@ -1,6 +1,3 @@
-[submodule "lib/act-common"]
-	path = lib/act-common
-	url = https://github.com/Dqxl1t0AQAave4/act-common
 [submodule "lib/src/com-port-api"]
 	path = lib/src/com-port-api
 	url = https://github.com/Dqxl1t0AQAave4/act-common-src-com-port.git
