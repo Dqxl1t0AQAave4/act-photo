@@ -115,6 +115,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\lib\src\logger\logger.cpp" />
     <ClCompile Include="controller-gui.cpp" />
     <ClCompile Include="controller-guiDlg.cpp" />
     <ClCompile Include="ManagementDlg.cpp" />
