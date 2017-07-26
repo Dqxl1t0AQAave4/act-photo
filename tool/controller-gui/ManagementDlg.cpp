@@ -82,8 +82,8 @@ void CManagementDlg::OnBnClickedCoefsSet()
     act_photo::desired_coefs_t optimal;
     act_photo::coefs_t coefs = act_photo::calculate_optimal_coefs(m_desired, optimal);
 
-    logger::log(_T("sending coefs [kp = %.2e, ki = %.2f, ks = %.2f]"), optimal.kp, optimal.ki, optimal.ks);
-    logger::log(_T("kp => [%d, %d, %d], ki => [%d, %d, %d], ks => [%d, %d, %d]"),
+    logger::logs<logger::wlog>(L"sending coefs [kp = %.2e, ki = %.2f, ks = %.2f]", optimal.kp, optimal.ki, optimal.ks);
+    logger::logs<logger::wlog>(L"kp => [%d, %d, %d], ki => [%d, %d, %d], ks => [%d, %d, %d]",
                 (coefs.kp_m >> 8) & 0xff, coefs.kp_m & 0xff, coefs.kp_d,
                 (coefs.ki_m >> 8) & 0xff, coefs.ki_m & 0xff, coefs.ki_d,
                 (coefs.ks_m >> 8) & 0xff, coefs.ks_m & 0xff, coefs.ks_d);

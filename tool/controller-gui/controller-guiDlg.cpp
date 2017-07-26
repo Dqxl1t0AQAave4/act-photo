@@ -9,7 +9,7 @@
 
 #include "common.h"
 #include "plot.h"
-#include <act-common/logger.h>
+#include <act-common/logger_win.h>
 #include "act-photo.h"
 #include <act-common/reactor.h>
 
@@ -87,8 +87,8 @@ CControllerGUIDlg::CControllerGUIDlg(CWnd* pParent /*=NULL*/)
     PLOT(m_pwm_plot_ctrl, pwm_plot, &short_world);
     PLOT(m_ocr2_plot_ctrl, ocr2_plot, &byte_world);
 
-    logger::set([this] (CString s) {
-        RequestLog(s);
+    logger::wlog::get().spi().set_logger([this] (const std::wstring &s) {
+        RequestLog(CString(s.c_str()));
     });
 }
 
@@ -291,5 +291,5 @@ void CControllerGUIDlg::OnDestroy()
 
     _worker.stop();
     _worker.join();
-    logger::set([] (CString) {});
+    logger::wlog::get().spi().set_logger([] (const std::wstring &) {});
 }
