@@ -133,14 +133,6 @@
   <ItemGroup>
     <Image Include="res\controller-gui.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\lib\src\com-port-api\src\com-port-api.vcxproj">
-      <Project>{27b5fc72-5e56-4685-8b49-c885f99507e9}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\lib\src\logger\logger-simple-api.vcxproj">
-      <Project>{f51f8123-3c41-4bdb-a997-939a7dec5178}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
