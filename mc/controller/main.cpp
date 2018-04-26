@@ -25,9 +25,21 @@
 #define TC2_RELOCPIN_CONFIG() PORTB &= ~(1 << PORTB2); \
                               DDRB |= (1 << DDB2)
 
+#define SPI_DORD 1 // LSB first
+#define SPI_CPOL 0
+#define SPI_CPHA 0
+#define SPI_CR   2 // FOSC / 64
+
+#define TWI_2M_ADDRESS        1
+#define TWI_2M_MASTER_ADDRESS 2
+
+#define TWI_OBUF_CONTAINER_T array < byte, byte(255), byte >
+#define SPI_OBUF_CONTAINER_T array < byte, byte(255), byte >
 
 
 #include <act-photo/usart.h>
+#include <act-photo/twi.h>
+#include <act-photo/spi.h>
 #include <act-photo/pwm.h>
 
 
@@ -73,6 +85,10 @@ inline __monitor void init()
 
     /* USART initialization */
     usart_init();
+    /* SPI initialization */
+    spi_init();
+    /* TWI initialization */
+    twi_init();
     /* Timer/Counter2 initialization */
     init_tc2_wg();
 }
