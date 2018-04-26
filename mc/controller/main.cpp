@@ -19,6 +19,11 @@
 #define BAUD_RATE    4800    // 4.8kbps
 #define FOSC         1000000 // 1MHz
 #define TC2_PRESCALE 1       // no Timer/Counter2 prescale
+#define TC2_RELOCATE
+#define TC2_RELOCPIN_SET()    PORTB |= (1 << PORTB1)
+#define TC2_RELOCPIN_CLEAR()  PORTB &= ~(1 << PORTB1)
+#define TC2_RELOCPIN_CONFIG() PORTB &= ~(1 << PORTB2); \
+                              DDRB |= (1 << DDB2)
 
 
 
@@ -41,10 +46,6 @@
 
 inline __monitor void init()
 {
-    /* USART initialization */
-    usart_init();
-    /* Timer/Counter2 initialization */
-    init_tc2_wg();
     /* ADC initialization (1/8 prescaling,
        1st channel, internal Vref, left alignment) */
     REMUX(0);
@@ -69,6 +70,11 @@ inline __monitor void init()
     DDRD = (0<<DDD0)|(1<<DDD1)|(0<<DDD2)|
            (0<<DDD3)|(0<<DDD4)|(0<<DDD5)|
            (0<<DDD6)|(0<<DDD7);
+
+    /* USART initialization */
+    usart_init();
+    /* Timer/Counter2 initialization */
+    init_tc2_wg();
 }
 
 
