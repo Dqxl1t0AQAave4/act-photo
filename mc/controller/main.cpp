@@ -211,7 +211,9 @@ byte output_mode = NO_OUTPUT;
 
 inline byte transmit_all(byte * src, byte length)
 {
-    return iobuf_write < sp_process_full, lp_use_lock > (usart_obuf, src, length);
+    byte res = iobuf_write < sp_process_full, lp_use_lock > (usart_obuf, src, length);
+    usart_touch();
+    return res;
 }
 
 inline byte receive_all(byte * dst, byte length)
