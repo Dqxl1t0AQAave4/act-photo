@@ -33,8 +33,8 @@
 #define TWI_2M_ADDRESS        1
 #define TWI_2M_MASTER_ADDRESS 2
 
-#define TWI_OBUF_CONTAINER_T array < byte, byte(255), byte >
-#define SPI_OBUF_CONTAINER_T array < byte, byte(255), byte >
+#define TWI_OBUF_CONTAINER_T array < byte, byte(128), byte >
+#define SPI_OBUF_CONTAINER_T array < byte, byte(128), byte >
 
 
 #include <act-photo/usart.h>
