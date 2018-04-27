@@ -1,6 +1,8 @@
 #define DLIB
 
 #include <act-common/common.h>
+#include <act-common/array.h>
+#include <cstdlib>
 
 
 
@@ -33,6 +35,10 @@
 #define TWI_2M_ADDRESS        1
 #define TWI_2M_MASTER_ADDRESS 2
 
+typedef array < byte, 32, byte > ibuf_t;
+
+#define TWI_IBUF_CONTAINER_T ibuf_t
+#define SPI_IBUF_CONTAINER_T ibuf_t
 #define TWI_OBUF_CONTAINER_T array < byte, byte(128), byte >
 #define SPI_OBUF_CONTAINER_T array < byte, byte(128), byte >
 
@@ -459,6 +465,235 @@ void do_computations()
 
 
 // ========================================================================
+// ================= Shell-like Command Processors ========================
+// ========================================================================
+
+
+bool strstw(const char * pre, const char * str)
+{
+    byte lenpre = strlen(pre),
+         lenstr = strlen(str);
+    return (lenstr < lenpre) ? false : (strncmp(pre, str, lenpre) == 0);
+}
+
+byte itoa(char * out, unsigned int n)
+{
+    char * old = out; byte d;
+    bool lz = true;
+    if (((d = byte(n / 10000)) != 0) || !lz) { *out++ = (char) (d + '0'); n -= d * 10000; lz = false; }
+    if (((d = byte(n / 1000)) != 0) || !lz) { *out++ = (char) (d + '0'); n -= d * 1000; lz = false; }
+    if (((d = byte(n / 100)) != 0) || !lz) { *out++ = (char) (d + '0'); n -= d * 100; lz = false; }
+    if (((d = byte(n / 10)) != 0) || !lz) { *out++ = (char) (d + '0'); n -= d * 10; }
+    *out++ = (char) (n + '0');
+    return (byte) (out - old);
+}
+
+byte itoa(char * out, byte n)
+{
+    char * old = out; byte d;
+    bool lz = true;
+    if (((d = byte(n / 100)) != 0) || !lz) { *out++ = (char) (d + '0'); n -= d * 100; lz = false; }
+    if (((d = byte(n / 10)) != 0) || !lz) { *out++ = (char) (d + '0'); n -= d * 10; }
+    *out++ = (char) (n + '0');
+    return (byte) (out - old);
+}
+
+byte atoi(const char * in, byte len, unsigned int & n)
+{
+    byte c;
+    if (len > 5) len = 5;
+    n = 0;
+    for (c = 0; c < len; ++c)
+    {
+        if ((byte(in[c]) < byte('0')) || (byte(in[c]) > byte('9'))) return c;
+        n = n * 10 + (byte(in[c]) - byte('0'));
+    }
+    return c;
+}
+
+byte atoi(const char * in, byte len, byte & n)
+{
+    byte c;
+    if (len > 3) len = 3;
+    n = 0;
+    for (c = 0; c < len; ++c)
+    {
+        if ((byte(in[c]) < byte('0')) || (byte(in[c]) > byte('9'))) return c;
+        n = n * 10 + (byte(in[c]) - byte('0'));
+    }
+    return c;
+}
+
+byte wsskip(const char * in)
+{
+    byte c = 0;
+    while (*(in + c) == ' ') ++c;
+    return c;
+}
+
+ibuf_t shell_spi_ibuf;     /* command interpreter input buffer      */
+byte   shell_spi_ibuf_len; /* command interpreter buffer position   */
+ibuf_t shell_twi_ibuf;     /* command interpreter input buffer      */
+byte   shell_twi_ibuf_len; /* command interpreter buffer position   */
+char   sfmtbuf[64];
+byte   sfmtpos;
+
+#define sfmt_begin()  sfmtpos = 0
+#define sfmt_str(str) strcpy((char*)sfmtbuf + sfmtpos, str); \
+                      sfmtpos += sizeof(str) - 1
+#define sfmt_num(num) sfmtpos += itoa((char*)sfmtbuf + sfmtpos, num)
+#define sfmt_end()    *((char*)sfmtbuf + sfmtpos) = '\0'
+
+
+void shell_read_pending_commands()
+{
+    shell_spi_ibuf_len += iobuf_read < sp_process_any, lp_use_lock > (
+        shell_spi_ibuf + shell_spi_ibuf_len,
+        spi_ibuf,
+        array_size(shell_spi_ibuf) - shell_spi_ibuf_len
+    );
+    shell_twi_ibuf_len += iobuf_read < sp_process_any, lp_use_lock > (
+        shell_twi_ibuf + shell_twi_ibuf_len,
+        twi_ibuf,
+        array_size(shell_twi_ibuf) - shell_twi_ibuf_len
+    );
+}
+
+const char * shell_process_command(ibuf_t & buf, byte & len)
+{
+    byte cmd_end = 0;
+    for (byte i = 0; i < len; ++i)
+    {
+        if (char(buf[i]) == '\0')
+        {
+            cmd_end = i + 1;
+            break;
+        }
+    }
+    /* no complete command in the buffer, wait */
+    if (cmd_end == 0)
+    {
+        /* buffer overflow, clear the buffer */
+        if (len == array_size(buf))
+        {
+            len = 0;
+        }
+        return 0;
+    }
+    bool unknown_cmd = false;
+    const char * cmd = (const char *) buf.data;
+    const char * result;
+    if (strstw("help", cmd))
+    {
+        result =
+            "act-photo cmd interpreter:\r\n\r\n"
+            "  help\r\n"
+            "  echo <text>\r\n"
+            "  adcdump - dump adc\r\n"
+            "  getcoef"
+            "  setcoef -(p|i|s) <m> <d>";
+    }
+    else if (strstw("echo ", cmd))
+    {
+        strcpy(sfmtbuf, cmd + sizeof("echo ") - 1);
+        result = sfmtbuf;
+    }
+    else if (strstw("adcdump", cmd))
+    {
+        sfmt_begin();
+            sfmt_str("adc1="); sfmt_num(adc1);
+            sfmt_str(", adc2="); sfmt_num(adc2);
+        sfmt_end();
+        result = sfmtbuf;
+    }
+    else if (strstw("getcoef", cmd))
+    {
+        sfmt_begin();
+            sfmt_str("kp=("); sfmt_num(kp_m); sfmt_str(","); sfmt_num(kp_d); sfmt_str("), ");
+            sfmt_str("ki=("); sfmt_num(ki_m); sfmt_str(","); sfmt_num(ki_d); sfmt_str("), ");
+            sfmt_str("ks=("); sfmt_num(ks_m); sfmt_str(","); sfmt_num(ks_d); sfmt_str(")");
+        sfmt_end();
+        result = sfmtbuf;
+    }
+    else if (strstw("setcoef -", cmd))
+    {
+        sfmtpos = sizeof("setcoef -") - 1;
+        char k; unsigned int m; byte d;
+        k = cmd[sfmtpos]; ++sfmtpos;
+        sfmtpos += wsskip(cmd + sfmtpos);
+        sfmtpos += atoi(cmd + sfmtpos, cmd_end - sfmtpos, m);
+        sfmtpos += wsskip(cmd + sfmtpos);
+        sfmtpos = atoi(cmd + sfmtpos, cmd_end - sfmtpos, d);
+        if (!sfmtpos)
+        {
+            unknown_cmd = true;
+        }
+        else
+        {
+            if (k == 'p')
+            {
+                kp_m = m; kp_d = (byte)(d);
+            }
+            else if (k == 'i')
+            {
+                ki_m = m; ki_d = (byte)(d);
+            }
+            else if (k == 's')
+            {
+                ks_m = m; ks_d = (byte)(d);
+            }
+            else
+            {
+                unknown_cmd = true;
+            }
+            if (!unknown_cmd)
+            {
+                sfmt_begin();
+                    sfmt_str("setting m="); sfmt_num(m); sfmt_str(", ");
+                    sfmt_str("d="); sfmt_num(d);
+                sfmt_end();
+                result = sfmtbuf;
+            }
+        }
+    }
+    else
+    {
+        unknown_cmd = true;
+    }
+    if (unknown_cmd)
+    {
+        result = "unknown or incorrect command";
+    }
+    len -= cmd_end;
+    for (byte i = 0; i < len; ++i)
+    {
+        buf[i] = buf[i + cmd_end];
+    }
+    return result;
+}
+
+void shell_process_pending_commands()
+{
+    const char * result;
+    result = shell_process_command(shell_twi_ibuf, shell_twi_ibuf_len);
+    if (result)
+    {
+        iobuf_write < sp_process_full, lp_use_lock > (twi_obuf, (byte *) result, strlen(result) + 1);
+        twi_notify();
+    }
+    result = shell_process_command(shell_spi_ibuf, shell_spi_ibuf_len);
+    if (result)
+    {
+        iobuf_write < sp_process_full, lp_use_lock > (spi_obuf, (byte *) result, strlen(result) + 1);
+        spi_notify();
+    }
+}
+
+
+
+
+
+// ========================================================================
 // ===================== Program Entry Point ==============================
 // ========================================================================
 
@@ -497,6 +732,12 @@ int main()
         }
         
         
+        /* Shell Command Processor */
+
+
+        shell_process_pending_commands();
+
+
         /* Program Body */
         
         
