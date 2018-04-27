@@ -63,7 +63,7 @@
         </option>
         <option>
           <name>SCCStackSize</name>
-          <state>0x20</state>
+          <state>0x80</state>
         </option>
         <option>
           <name>SCExtCStack</name>
