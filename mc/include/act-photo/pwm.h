@@ -34,7 +34,7 @@ inline __monitor void init_tc2_wg()
     TCCR2 = (1<<WGM21)|(1<<WGM20)|(TC2_PRESCALE<<CS20);
 }
 
-#elif
+#else
 
 inline __monitor void init_tc2_wg()
 {
